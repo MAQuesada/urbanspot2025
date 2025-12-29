@@ -1,95 +1,97 @@
 # UrbanSpot Backend
 
-Backend API para UrbanSpot - Plataforma colaborativa de descubrimiento de puntos de interés urbanos.
+Backend API for UrbanSpot - Collaborative urban POI (Points of Interest) discovery platform.
 
-## Tecnologías
+## Technologies
 
-- **FastAPI**: Framework web moderno y rápido para construir APIs
-- **Pydantic**: Validación de datos y configuración
-- **Motor**: Driver asíncrono para MongoDB
-- **Boto3**: SDK de AWS para S3
-- **UV**: Gestor de dependencias y entornos virtuales
+- **FastAPI**: Modern and fast web framework for building APIs
+- **Pydantic**: Data validation and configuration
+- **Motor**: Async driver for MongoDB
+- **Boto3**: AWS SDK for S3
+- **bcrypt**: Password hashing library
+- **UV**: Dependency and virtual environment manager
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 backend/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py                 # Punto de entrada de la aplicación
-│   ├── config.py               # Configuración con Pydantic Settings
-│   ├── models/                 # Modelos Pydantic
+│   ├── main.py                 # Application entry point
+│   ├── config.py               # Configuration with Pydantic Settings
+│   ├── models/                 # Pydantic models
 │   │   ├── user.py
 │   │   ├── poi.py
 │   │   ├── photo.py
 │   │   └── rating.py
-│   ├── routes/                  # Endpoints de la API
+│   ├── routes/                 # API endpoints
 │   │   ├── users.py
 │   │   ├── pois.py
 │   │   ├── photos.py
 │   │   └── ratings.py
-│   ├── services/                # Lógica de negocio
+│   ├── services/               # Business logic
 │   │   ├── user_service.py
 │   │   ├── poi_service.py
 │   │   ├── photo_service.py
 │   │   ├── rating_service.py
 │   │   └── gamification.py
-│   └── utils/                   # Utilidades
-│       ├── protocols.py         # Protocolos FileDB y DataDB
-│       ├── s3_storage.py         # Implementación S3
-│       ├── mongodb_storage.py    # Implementación MongoDB
-│       ├── storage.py            # Clase Storage
-│       ├── dependencies.py       # Dependencias FastAPI
-│       └── auth.py               # Autenticación API Key
-├── pyproject.toml               # Configuración del proyecto y dependencias
-├── .env.example                 # Ejemplo de variables de entorno
+│   └── utils/                  # Utilities
+│       ├── protocols.py         # FileDB and DataDB protocols
+│       ├── s3_storage.py        # S3 implementation
+│       ├── mongodb_storage.py   # MongoDB implementation
+│       ├── storage.py           # Storage class
+│       ├── dependencies.py      # FastAPI dependencies
+│       ├── auth.py              # API Key authentication
+│       └── security.py          # Password hashing utilities
+├── pyproject.toml              # Project configuration and dependencies
+├── .env.example                # Environment variables example
 └── README.md
 ```
 
-## Instalación
+## Installation
 
-### Prerrequisitos
+### Prerequisites
 
-- Python 3.11 o superior
-- UV instalado (`pip install uv` o `curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- Python 3.11 or higher
+- UV installed (`pip install uv` or `curl -LsSf https://astral.sh/uv/install.sh | sh`)
 
-### Pasos
+### Steps
 
-1. **Crear entorno virtual con UV:**
+1. **Create virtual environment with UV:**
    ```bash
    cd backend
    uv venv
    ```
 
-2. **Activar el entorno virtual:**
+2. **Activate the virtual environment:**
    ```bash
-   # En macOS/Linux:
+   # On macOS/Linux:
    source .venv/bin/activate
    
-   # En Windows:
+   # On Windows:
    .venv\Scripts\activate
    ```
 
-3. **Instalar dependencias:**
+3. **Install dependencies:**
    ```bash
    uv pip install -e .
    ```
 
-4. **Configurar variables de entorno:**
+4. **Configure environment variables:**
    ```bash
    cp .env.example .env
    ```
    
-   Edita el archivo `.env` con tus credenciales:
+   Edit the `.env` file with your credentials:
    - MongoDB Atlas URI
    - AWS S3 credentials
-   - API Key para autenticación
+   - API Key for authentication
 
-## Configuración
+## Configuration
 
-### Variables de Entorno
+### Environment Variables
 
-Crea un archivo `.env` en la raíz del backend con las siguientes variables:
+Create a `.env` file in the backend root with the following variables:
 
 ```env
 # App Configuration
@@ -106,115 +108,167 @@ AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=your-s3-bucket-name
-
-# OAuth Configuration (for future frontend integration)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
-## Ejecución
+## Running the Application
 
-### Desarrollo
+### Development
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Producción
+### Production
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-La API estará disponible en `http://localhost:8000`
+The API will be available at `http://localhost:8000`
 
-Documentación interactiva (Swagger): `http://localhost:8000/docs`
-Documentación alternativa (ReDoc): `http://localhost:8000/redoc`
+Interactive documentation (Swagger): `http://localhost:8000/docs`
+Alternative documentation (ReDoc): `http://localhost:8000/redoc`
+
+## API Security
+
+### API Key Authentication
+
+All API endpoints are protected using **API Key authentication**. To access any endpoint, you must include the API key in the request headers:
+
+```
+X-API-Key: your-api-key-here
+```
+
+The API key is configured in the `.env` file as `API_KEY`. If the API key is missing or invalid, the API will return a `401 Unauthorized` error.
+
+**Security Best Practices:**
+- Keep your API key secret and never commit it to version control
+- Use different API keys for development and production environments
+- Rotate API keys periodically
+- Use HTTPS in production to protect the API key in transit
+
+## User Management & Credentials
+
+### User Registration
+
+Users are created with the following information:
+- **Name**: User's full name
+- **Email**: Valid email address (validated using Pydantic's `EmailStr`)
+- **Password**: Plain text password (minimum 6 characters, maximum 72 bytes)
+
+### Password Security
+
+User passwords are securely managed using the following approach:
+
+1. **Password Hashing**: Passwords are hashed using **bcrypt** before being stored in the database. The original password is never stored.
+
+2. **Password Validation**:
+   - Minimum length: 6 characters
+   - Maximum length: 72 bytes (bcrypt limitation)
+   - Passwords are validated before hashing to ensure they meet requirements
+
+3. **Password Storage**: Only the bcrypt hash is stored in the database in the `hashed_password` field. The plain text password is never persisted.
+
+4. **Password Verification**: When authenticating, the provided password is hashed and compared against the stored hash using bcrypt's secure comparison function.
+
+**Security Features:**
+- Passwords are automatically salted by bcrypt
+- Each password hash is unique, even for identical passwords
+- The hashing process is computationally expensive, making brute-force attacks difficult
+- Passwords are never returned in API responses
+
+### User Authentication Flow
+
+1. **Registration**: `POST /users/` - Creates a new user with email and password
+2. **Authentication**: `POST /users/authenticate` - Validates email/password and returns the user object if credentials are valid
+
+The authentication endpoint does not return tokens or sessions. It simply validates credentials and returns the user data. Session management should be handled by the frontend application.
 
 ## API Endpoints
 
-### Autenticación
+### Users
 
-Todas las rutas requieren el header `X-API-Key` con el valor configurado en `API_KEY`.
+- `POST /users/` - Create a new user (requires: name, email, password)
+- `POST /users/authenticate` - Authenticate user with email and password
+- `GET /users/{user_id}` - Get user by ID
+- `GET /users/{user_id}/profile` - Get user profile with contribution statistics
+- `GET /users/ranking/global` - Get global user ranking by total score
 
-### Usuarios
+### POIs (Points of Interest)
 
-- `POST /users/` - Crear usuario
-- `GET /users/{user_id}` - Obtener usuario por ID
-- `GET /users/{user_id}/profile` - Obtener perfil de usuario
-- `GET /users/ranking/global` - Obtener ranking global
+- `POST /pois/` - Create a POI (requires: name, description, latitude, longitude, author_id, image)
+- `GET /pois/` - List all POIs (supports pagination and tag filtering)
+- `GET /pois/{poi_id}` - Get POI by ID with details
+- `PUT /pois/{poi_id}` - Update a POI
+- `DELETE /pois/{poi_id}` - Delete a POI and associated photos
 
-### POIs (Puntos de Interés)
+### Photos
 
-- `POST /pois/` - Crear POI (con imagen)
-- `GET /pois/` - Listar todos los POIs
-- `GET /pois/{poi_id}` - Obtener POI por ID
-- `PUT /pois/{poi_id}` - Actualizar POI
-- `DELETE /pois/{poi_id}` - Eliminar POI
+- `POST /photos/` - Upload a photo to a POI (requires: poi_id, author_id, image)
+- `GET /photos/poi/{poi_id}` - Get all photos for a specific POI
+- `GET /photos/{photo_id}` - Get photo by ID with details
+- `DELETE /photos/{photo_id}` - Delete a photo
 
-### Fotos
+### Ratings
 
-- `POST /photos/` - Subir foto a un POI
-- `GET /photos/poi/{poi_id}` - Obtener fotos de un POI
-- `GET /photos/{photo_id}` - Obtener foto por ID
-- `DELETE /photos/{photo_id}` - Eliminar foto
+- `POST /ratings/` - Create a rating for a POI or photo (requires: user_id, target_type, target_id, score)
+- `GET /ratings/{rating_id}` - Get rating by ID
+- `DELETE /ratings/{rating_id}` - Delete a rating
 
-### Valoraciones
+## Gamification System
 
-- `POST /ratings/` - Crear valoración (POI o foto)
-- `GET /ratings/{rating_id}` - Obtener valoración por ID
-- `DELETE /ratings/{rating_id}` - Eliminar valoración
+The system automatically awards points based on user actions:
 
-## Sistema de Gamificación
+- **Create POI**: +20 points
+- **POI with average rating > 7**: +10 bonus points
+- **Upload photo**: +5 points
+- **Photo with average rating > 7**: +10 bonus points
+- **Rate content**: +1 point
 
-El sistema otorga puntos automáticamente:
+Points are automatically calculated and updated in the user's profile. The system tracks separate scores for POI contributions and photo contributions, as well as a total score.
 
-- **Crear POI**: +20 puntos
-- **POI con valoración media > 7**: +10 puntos
-- **Subir foto**: +5 puntos
-- **Foto con valoración media > 7**: +10 puntos
-- **Valorar contenido**: +1 punto
+## Architecture
 
-## Arquitectura
+### Protocols
 
-### Protocolos
+The system uses protocols (ABC) to abstract storage operations:
 
-El sistema utiliza protocolos (ABC) para abstraer el almacenamiento:
-
-- **FileDB**: Protocolo para almacenamiento de archivos (implementado con S3)
-- **DataDB**: Protocolo para base de datos (implementado con MongoDB)
+- **FileDB**: Protocol for file storage operations (implemented with S3)
+- **DataDB**: Protocol for database operations (implemented with MongoDB)
 
 ### Storage
 
-La clase `Storage` recibe instancias de los protocolos y gestiona:
-- Almacenamiento de archivos (imágenes) en S3
-- Operaciones de base de datos en MongoDB Atlas
+The `Storage` class receives instances of both protocols and manages:
+- File storage (images) in S3
+- Database operations in MongoDB Atlas
 
-### Servicios
+### Services
 
-Cada servicio encapsula la lógica de negocio:
-- Validaciones
-- Cálculos (puntuaciones, rankings)
-- Integración con gamificación
-- Gestión de relaciones entre entidades
+Each service encapsulates business logic:
+- Data validation
+- Score calculations (ratings, rankings)
+- Gamification integration
+- Relationship management between entities
 
-## Desarrollo
+## Development
 
-### Formato de código
+### Code Formatting
 
-El proyecto usa `black` y `ruff` para formateo y linting:
+The project uses `black` and `ruff` for code formatting and linting:
 
 ```bash
-# Formatear código
+# Format code
 black app/
 
 # Linting
 ruff check app/
 ```
 
-## Notas
+## Notes
 
-- La autenticación OAuth 2.0 se manejará desde el frontend
-- El backend actualmente usa API Key para proteger los endpoints
-- Las imágenes se almacenan en S3 y las URLs se guardan en MongoDB
-- El sistema calcula automáticamente las valoraciones medias y actualiza los puntos de los usuarios
+- All endpoints require API Key authentication via the `X-API-Key` header
+- User passwords are hashed using bcrypt before storage
+- Images are stored in S3 and URLs are saved in MongoDB
+- The system automatically calculates average ratings and updates user points
+- User IDs must be provided explicitly in creation endpoints (author_id, user_id)
+- Email addresses are validated using Pydantic's email validator
