@@ -18,7 +18,8 @@ app.add_middleware(
     allow_origins=["*"],  # In production, specify actual origins
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],  # Allow all headers including X-API-Key
+    expose_headers=["*"],  # Expose all headers in responses
 )
 
 # Include routers

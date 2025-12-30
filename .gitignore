@@ -8,6 +8,16 @@ ehthumbs.db
 Thumbs.db
 Desktop.ini
 
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.ico
+*.webp
+*.pptx
 # IDE / Editor
 .vscode/
 .idea/

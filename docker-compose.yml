@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: urbanspot-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      # App Configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - SECRET_KEY=${SECRET_KEY}
+      - API_KEY=${API_KEY}
+      
+      # MongoDB Atlas Configuration
+      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_DATABASE=${MONGODB_DATABASE:-urbanspot}
+      
+      # AWS S3 Configuration
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+    env_file:
+      - .env
+    restart: ${RESTART_POLICY:-unless-stopped}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - urbanspot-network
+    # Uncomment for production logging
+    # logging:
+    #   driver: "json-file"
+    #   options:
+    #     max-size: "10m"
+    #     max-file: "3"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: urbanspot-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    environment:
+      - API_URL=${API_URL:-http://localhost:8000}
+      - API_KEY=${API_KEY}
+    depends_on:
+      - backend
+    networks:
+      - urbanspot-network
+    restart: ${RESTART_POLICY:-unless-stopped}
+
+networks:
+  urbanspot-network:
+    driver: bridge
