@@ -19,7 +19,7 @@ import { POI } from '../../models/poi.model';
         <div *ngIf="loading" class="loading">Cargando POIs...</div>
         
         <div *ngIf="!loading && pois.length === 0" style="padding: 40px; text-align: center; color: #666;">
-          <p>No hay POIs disponibles aún.</p>
+          <p style="margin-bottom: 10px;">No hay POIs disponibles aún.</p>
           <button class="btn btn-primary" (click)="router.navigate(['/map'])">Crear el primer POI</button>
         </div>
 
