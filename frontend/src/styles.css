@@ -30,6 +30,7 @@ body {
   color: white;
 }
 
+
 .btn-primary:hover {
   background-color: #0056b3;
 }
@@ -41,6 +42,14 @@ body {
 
 .btn-secondary:hover {
   background-color: #545b62;
+}
+
+.btn-success {
+  background-color: #03852e;
+  color: white;
+}
+.btn-success:hover {
+  background-color: #027d2b;
 }
 
 .btn-danger {

@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
   template: `
     <div class="container">
       <div class="card" style="max-width: 400px; margin: 50px auto;">
+        <h1>UrbanSpot</h1>
         <h2>Iniciar Sesión</h2>
         <form (ngSubmit)="onSubmit()">
           <div class="form-group">
@@ -21,7 +22,7 @@ import { AuthService } from '../../services/auth.service';
             <label>Contraseña</label>
             <input type="password" [(ngModel)]="password" name="password" required>
           </div>
-          <div *ngIf="error" class="error">{{ error }}</div>
+          <div *ngIf="error" class="error" style="color: red; margin: 10px 0; padding: 10px; background-color: #ffe6e6; border-radius: 4px;" >{{ error }}</div>
           <button type="submit" class="btn btn-primary" [disabled]="loading">
             {{ loading ? 'Iniciando...' : 'Iniciar Sesión' }}
           </button>
@@ -45,7 +46,12 @@ export class LoginComponent {
   ) {}
 
   onSubmit(): void {
+
     this.error = '';
+    if (!this.email || this.email.trim() === '' || !this.password || this.password.trim() === '') {
+      this.error = 'Está vacío, tienes que colocar usuario y contraseña';
+      return; 
+    }
     this.loading = true;
 
     this.authService.login({ email: this.email, password: this.password })

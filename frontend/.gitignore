@@ -45,3 +45,8 @@ Thumbs.db
 .env
 .env.local
 
+# Fix para frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+src/assets/config.json

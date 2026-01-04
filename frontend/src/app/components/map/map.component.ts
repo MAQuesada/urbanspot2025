@@ -16,9 +16,12 @@ import * as L from 'leaflet';
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h2>Mapa de POIs</h2>
-          <button class="btn btn-primary" (click)="showCreateForm = !showCreateForm">
-            {{ showCreateForm ? 'Cancelar' : 'Crear POI' }}
-          </button>
+          <button class="btn" 
+        [class.btn-danger]="showCreateForm" 
+        [class.btn-primary]="!showCreateForm" 
+        (click)="showCreateForm = !showCreateForm">
+  {{ showCreateForm ? 'Cancelar' : 'Crear POI' }}
+</button>
         </div>
 
         <div *ngIf="showCreateForm" class="card" style="margin-bottom: 20px;">
