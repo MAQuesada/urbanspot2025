@@ -25,7 +25,7 @@ import { AuthService } from '../../services/auth.service';
             <label>Contraseña (mínimo 6 caracteres)</label>
             <input type="password" [(ngModel)]="password" name="password" required minlength="6">
           </div>
-          <div *ngIf="error" class="error">{{ error }}</div>
+          <div *ngIf="error" class="error" style="color: red; margin: 10px 0; padding: 10px; background-color: #ffe6e6; border-radius: 4px;">{{ error }}</div>
           <div *ngIf="success" class="success">{{ success }}</div>
           <button type="submit" class="btn btn-primary" [disabled]="loading">
             {{ loading ? 'Registrando...' : 'Registrarse' }}
@@ -55,6 +55,11 @@ export class RegisterComponent {
     this.error = '';
     this.success = '';
     this.loading = true;
+
+    if (!this.name.trim() || !this.email.trim() || !this.password.trim()) {
+      this.error = 'Todos los campos son obligatorios. Por favor, rellénalos.';
+      return; 
+    }
 
     if (this.password.length < 6) {
       this.error = 'La contraseña debe tener al menos 6 caracteres';

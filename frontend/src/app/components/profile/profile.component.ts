@@ -12,7 +12,7 @@ import { Photo } from '../../models/photo.model';
   imports: [CommonModule, RouterLink],
   template: `
     <div class="container">
-      <button class="btn btn-secondary" (click)="router.navigate(['/map'])">← Volver al Mapa</button>
+      <button class="btn btn-secondary" (click)="router.navigate(['/map'])" style="margin-bottom: 10px;">← Volver al Mapa</button>
       
       <div *ngIf="loading" class="loading">Cargando perfil...</div>
       <div *ngIf="!loading && profile" class="card">
