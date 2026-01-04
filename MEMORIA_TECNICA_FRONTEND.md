@@ -1,52 +1,52 @@
-# Memoria Técnica - Frontend UrbanSpot
+# Technical Documentation - UrbanSpot Frontend
 
-## 1. Tecnologías Empleadas
+## 1. Technologies Used
 
-### 1.1 Lenguajes y Frameworks
+### 1.1 Languages and Frameworks
 
-- **TypeScript 5.2+**: Lenguaje de programación principal, elegido por su tipado estático, mejor experiencia de desarrollo y detección temprana de errores.
-- **Angular 17.0+**: Framework web moderno y completo para construir aplicaciones SPA (Single Page Applications). Seleccionado por:
-  - Arquitectura basada en componentes reutilizables
-  - Sistema de inyección de dependencias robusto
-  - Routing avanzado con lazy loading
-  - Gestión de estado reactiva con RxJS
-  - Soporte para aplicaciones standalone (sin NgModules)
-  - CLI potente para scaffolding y build
-- **RxJS 7.8+**: Biblioteca para programación reactiva y manejo asíncrono de datos mediante Observables.
+- **TypeScript 5.2+**: Main programming language, chosen for its static typing, better development experience, and early error detection.
+- **Angular 17.0+**: Modern and complete web framework for building SPA (Single Page Applications). Selected for:
+  - Architecture based on reusable components
+  - Robust dependency injection system
+  - Advanced routing with lazy loading
+  - Reactive state management with RxJS
+  - Support for standalone applications (without NgModules)
+  - Powerful CLI for scaffolding and build
+- **RxJS 7.8+**: Library for reactive programming and asynchronous data handling through Observables.
 
-### 1.2 Librerías y Herramientas
+### 1.2 Libraries and Tools
 
-- **Leaflet 1.9.4**: Biblioteca JavaScript de código abierto para mapas interactivos.
-  - **Decisión técnica**: Leaflet fue elegido sobre Google Maps por ser open-source, ligero, y no requerir API keys costosas. Proporciona funcionalidad completa para mostrar POIs en un mapa.
-- **Angular Forms**: Sistema de formularios reactivos y template-driven para gestión de inputs de usuario.
-- **Angular Router**: Sistema de routing con lazy loading de componentes para optimizar el rendimiento inicial.
+- **Leaflet 1.9.4**: Open-source JavaScript library for interactive maps.
+  - **Technical decision**: Leaflet was chosen over Google Maps for being open-source, lightweight, and not requiring expensive API keys. It provides complete functionality for displaying POIs on a map.
+- **Angular Forms**: System of reactive and template-driven forms for user input management.
+- **Angular Router**: Routing system with component lazy loading to optimize initial performance.
 
-### 1.3 Servicios Cloud Externos
+### 1.3 External Cloud Services
 
-- **AWS S3**: Almacenamiento de imágenes (POIs y fotos).
+- **AWS S3**: Image storage (POIs and photos).
   - URL: `https://urbanspot-bucket-2025.s3.eu-central-1.amazonaws.com/`
-  - Las imágenes se sirven directamente desde S3 mediante URLs públicas.
-- **MongoDB Atlas**: Base de datos NoSQL (acceso indirecto a través de la API backend).
+  - Images are served directly from S3 via public URLs.
+- **MongoDB Atlas**: NoSQL database (indirect access through backend API).
 
-### 1.4 Contenedores y Despliegue
+### 1.4 Containers and Deployment
 
-- **Docker**: Contenedorización de la aplicación para garantizar consistencia entre entornos.
-- **Docker Compose**: Orquestación de servicios y gestión de variables de entorno.
-- **Nginx**: Servidor web ligero para servir la aplicación Angular en producción.
-  - **Decisión técnica**: Nginx es más eficiente que Node.js para servir archivos estáticos y tiene mejor rendimiento en producción.
+- **Docker**: Application containerization to ensure consistency across environments.
+- **Docker Compose**: Service orchestration and environment variable management.
+- **Nginx**: Lightweight web server to serve the Angular application in production.
+  - **Technical decision**: Nginx is more efficient than Node.js for serving static files and has better performance in production.
 
-### 1.5 Herramientas de Desarrollo
+### 1.5 Development Tools
 
-- **Angular CLI**: Herramienta de línea de comandos para desarrollo, build y testing.
-- **Node.js 20+**: Entorno de ejecución para desarrollo y build del proyecto.
+- **Angular CLI**: Command-line tool for development, build, and testing.
+- **Node.js 20+**: Runtime environment for development and project build.
 
 ---
 
-## 2. Descripción Técnica de la Aplicación Web
+## 2. Technical Description of the Web Application
 
-### 2.1 Arquitectura del Sistema
+### 2.1 System Architecture
 
-La aplicación sigue una **arquitectura de componentes y servicios** con separación clara de responsabilidades:
+The application follows a **component and service architecture** with clear separation of responsibilities:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -55,188 +55,188 @@ La aplicación sigue una **arquitectura de componentes y servicios** con separac
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
-│         Service Layer                    │
-│  (ApiService, AuthService)                │
+│         Service Layer                   │
+│  (ApiService, AuthService)              │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
-│      HTTP Client (RxJS Observables)      │
-│  (REST API Communication)                 │
+│      HTTP Client (RxJS Observables)     │
+│  (REST API Communication)               │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
-│      Backend API (FastAPI)               │
-│  (REST Endpoints)                         │
-└──────────────────────────────────────────┘
+│      Backend API (FastAPI)              │
+│  (REST Endpoints)                       │
+└─────────────────────────────────────────┘
 ```
 
-### 2.2 Patrón de Diseño: Servicios y Componentes
+### 2.2 Design Pattern: Services and Components
 
-**Una de las decisiones arquitectónicas más importantes** es la separación entre **componentes de presentación** y **servicios de lógica de negocio**.
+**One of the most important architectural decisions** is the separation between **presentation components** and **business logic services**.
 
-#### 2.2.1 Servicio `ApiService`
+#### 2.2.1 `ApiService` Service
 
-El servicio `ApiService` (`app/services/api.service.ts`) centraliza toda la comunicación con la API backend:
+The `ApiService` service (`app/services/api.service.ts`) centralizes all communication with the backend API:
 
-**Responsabilidades**:
+**Responsibilities**:
 
-- Carga de configuración desde `config.json` (generado en runtime por Docker)
-- Gestión de headers HTTP (incluyendo `X-API-Key`)
-- Métodos para todas las operaciones CRUD (POIs, fotos, usuarios, valoraciones)
-- Manejo de errores HTTP
-- Validación de configuración antes de hacer requests
+- Configuration loading from `config.json` (generated at runtime by Docker)
+- HTTP header management (including `X-API-Key`)
+- Methods for all CRUD operations (POIs, photos, users, ratings)
+- HTTP error handling
+- Configuration validation before making requests
 
-**Características clave**:
+**Key features**:
 
-- **Configuración dinámica**: El `config.json` se genera en runtime desde variables de entorno, permitiendo diferentes configuraciones sin rebuild.
-- **Inyección de API Key**: La API key se inyecta automáticamente en todos los headers HTTP.
-- **Observables**: Todas las operaciones retornan Observables de RxJS para manejo asíncrono.
+- **Dynamic configuration**: `config.json` is generated at runtime from environment variables, allowing different configurations without rebuild.
+- **API Key injection**: The API key is automatically injected into all HTTP headers.
+- **Observables**: All operations return RxJS Observables for asynchronous handling.
 
-**Beneficios de esta decisión**:
+**Benefits of this decision**:
 
-- **Centralización**: Un solo punto de configuración para todas las llamadas API
-- **Mantenibilidad**: Cambios en la API se reflejan en un solo lugar
-- **Testabilidad**: Fácil mockear el servicio para testing
-- **Reutilización**: Todos los componentes usan el mismo servicio
+- **Centralization**: Single point of configuration for all API calls
+- **Maintainability**: API changes are reflected in one place
+- **Testability**: Easy to mock the service for testing
+- **Reusability**: All components use the same service
 
-#### 2.2.2 Servicio `AuthService`
+#### 2.2.2 `AuthService` Service
 
-El servicio `AuthService` (`app/services/auth.service.ts`) gestiona el estado de autenticación:
+The `AuthService` service (`app/services/auth.service.ts`) manages authentication state:
 
-**Responsabilidades**:
+**Responsibilities**:
 
-- Login y registro de usuarios
-- Almacenamiento de usuario en `localStorage`
-- Gestión de sesión de usuario
-- Notificación de cambios mediante RxJS Subject
-- Normalización de IDs (`_id` → `id`)
+- User login and registration
+- User storage in `localStorage`
+- User session management
+- Change notification via RxJS Subject
+- ID normalization (`_id` → `id`)
 
-**Características clave**:
+**Key features**:
 
-- **Persistencia**: El usuario se guarda en `localStorage` para mantener sesión entre recargas
-- **Reactividad**: Usa `Subject` para notificar cambios a componentes suscritos
-- **Normalización**: Convierte `_id` de MongoDB a `id` para consistencia en frontend
-- **Actualización automática**: Método `refreshUser()` para actualizar puntos del usuario
+- **Persistence**: User is saved in `localStorage` to maintain session between reloads
+- **Reactivity**: Uses `Subject` to notify changes to subscribed components
+- **Normalization**: Converts MongoDB `_id` to `id` for frontend consistency
+- **Automatic update**: `refreshUser()` method to update user points
 
-**Beneficios**:
+**Benefits**:
 
-- **Estado global**: El usuario está disponible en toda la aplicación
-- **Sincronización**: Los cambios se propagan automáticamente a todos los componentes
-- **Persistencia**: La sesión se mantiene entre recargas de página
+- **Global state**: User is available throughout the application
+- **Synchronization**: Changes automatically propagate to all components
+- **Persistence**: Session is maintained between page reloads
 
-#### 2.2.3 Componentes
+#### 2.2.3 Components
 
-Los componentes siguen el patrón **Smart/Dumb Components**:
+Components follow the **Smart/Dumb Components** pattern:
 
-- **Smart Components**: Contienen lógica de negocio y se comunican con servicios
-  - `MapComponent`: Gestiona el mapa y creación de POIs
-  - `ProfileComponent`: Muestra perfil y estadísticas del usuario
-  - `PoiDetailComponent`: Detalles de POI con funcionalidades completas
-  - `PoiListComponent`: Lista paginada de todos los POIs
-  - `RankingComponent`: Tabla de líderes
+- **Smart Components**: Contain business logic and communicate with services
+  - `MapComponent`: Manages map and POI creation
+  - `ProfileComponent`: Displays user profile and statistics
+  - `PoiDetailComponent`: POI details with complete functionality
+  - `PoiListComponent`: Paginated list of all POIs
+  - `RankingComponent`: Leaderboard
 
-- **Dumb Components**: Componentes de presentación pura (si los hubiera)
+- **Dumb Components**: Pure presentation components (if any)
 
-### 2.3 Diseño de la Interfaz de Usuario
+### 2.3 User Interface Design
 
-#### 2.3.1 Estructura de Navegación
+#### 2.3.1 Navigation Structure
 
-La aplicación utiliza **Angular Router** con las siguientes rutas:
+The application uses **Angular Router** with the following routes:
 
 ```
-/                    → Redirige a /map
-/login               → Componente de login
-/register           → Componente de registro
-/map                 → Mapa interactivo con POIs
-/pois                → Lista de todos los POIs
-/poi/:id             → Detalles de un POI específico
-/profile/:id         → Perfil de usuario
-/ranking             → Ranking global de usuarios
+/                    → Redirects to /map
+/login               → Login component
+/register           → Registration component
+/map                 → Interactive map with POIs
+/pois                → List of all POIs
+/poi/:id             → Details of a specific POI
+/profile/:id         → User profile
+/ranking             → Global user ranking
 ```
 
-**Características**:
+**Features**:
 
-- **Lazy Loading**: Todos los componentes se cargan bajo demanda para optimizar el bundle inicial
-- **Guards**: `authGuard` protege rutas que requieren autenticación
-- **Redirección automática**: Usuarios no autenticados son redirigidos a `/login`
+- **Lazy Loading**: All components are loaded on demand to optimize initial bundle
+- **Guards**: `authGuard` protects routes that require authentication
+- **Automatic redirection**: Unauthenticated users are redirected to `/login`
 
-#### 2.3.2 Componentes Principales
+#### 2.3.2 Main Components
 
 ##### **AppComponent** (`app.component.ts`)
 
-- Componente raíz de la aplicación
-- Contiene el navbar con navegación y estado del usuario
-- Gestiona la visibilidad del navbar según la ruta
-- Se suscribe a actualizaciones del usuario para reflejar cambios en tiempo real
+- Root component of the application
+- Contains navbar with navigation and user state
+- Manages navbar visibility according to route
+- Subscribes to user updates to reflect changes in real time
 
 ##### **MapComponent** (`components/map/map.component.ts`)
 
-- Muestra mapa interactivo usando Leaflet
-- Carga todos los POIs desde la API con paginación (lotes de 1000)
-- Permite crear nuevos POIs haciendo clic en el mapa
-- Marcadores personalizados según etiquetas del POI
-- Navegación a detalles de POI al hacer clic en marcador
+- Displays interactive map using Leaflet
+- Loads all POIs from API with pagination (batches of 1000)
+- Allows creating new POIs by clicking on the map
+- Custom markers according to POI tags
+- Navigation to POI details when clicking on marker
 
 ##### **PoiListComponent** (`components/poi-list/poi-list.component.ts`)
 
-- Lista paginada de todos los POIs en formato de tarjetas
-- Carga todos los POIs con paginación automática
-- Navegación a detalles de POI al hacer clic en tarjeta
-- Diseño responsive con grid
+- Paginated list of all POIs in card format
+- Loads all POIs with automatic pagination
+- Navigation to POI details when clicking on card
+- Responsive design with grid
 
 ##### **PoiDetailComponent** (`components/poi-detail/poi-detail.component.ts`)
 
-- Muestra detalles completos de un POI
-- Galería de fotos asociadas al POI
-- Funcionalidad de subir nuevas fotos
-- Sistema de valoración (POI y fotos) con desplegables de 1-10
-- Edición y eliminación de POI (solo si el usuario es el autor)
-- Eliminación de fotos (solo si el usuario es el autor)
+- Displays complete POI details
+- Gallery of photos associated with the POI
+- Functionality to upload new photos
+- Rating system (POI and photos) with 1-10 dropdowns
+- Edit and delete POI (only if user is the author)
+- Delete photos (only if user is the author)
 
 ##### **ProfileComponent** (`components/profile/profile.component.ts`)
 
-- Muestra perfil completo del usuario
-- Estadísticas: puntos totales, POIs creados, fotos subidas
-- Lista de POIs creados por el usuario con enlaces a detalles
-- Lista de fotos subidas por el usuario con enlaces a POIs
-- Carga paginada de datos para manejar grandes volúmenes
+- Displays complete user profile
+- Statistics: total points, POIs created, photos uploaded
+- List of POIs created by the user with links to details
+- List of photos uploaded by the user with links to POIs
+- Paginated data loading to handle large volumes
 
 ##### **RankingComponent** (`components/ranking/ranking.component.ts`)
 
-- Tabla de ranking global de usuarios
-- Ordenado por `total_score` descendente
-- Muestra nombre, email y puntos totales
+- Global user ranking table
+- Ordered by `total_score` descending
+- Displays name, email, and total points
 
-##### **LoginComponent** y **RegisterComponent**
+##### **LoginComponent** and **RegisterComponent**
 
-- Formularios de autenticación y registro
-- Validación de campos
-- Redirección automática después de login/registro exitoso
+- Authentication and registration forms
+- Field validation
+- Automatic redirection after successful login/registration
 
-### 2.4 Gestión de Estado
+### 2.4 State Management
 
-#### 2.4.1 Estado de Usuario
+#### 2.4.1 User State
 
-- **Almacenamiento**: `localStorage` con clave `currentUser`
-- **Sincronización**: `AuthService` notifica cambios mediante `Subject`
-- **Actualización**: Se actualiza automáticamente después de operaciones (crear POI, subir foto, valorar)
+- **Storage**: `localStorage` with key `currentUser`
+- **Synchronization**: `AuthService` notifies changes via `Subject`
+- **Update**: Automatically updated after operations (create POI, upload photo, rate)
 
-#### 2.4.2 Estado de Componentes
+#### 2.4.2 Component State
 
-- Cada componente gestiona su propio estado local
-- Los datos se cargan desde la API en `ngOnInit()`
-- Los componentes se actualizan reactivamente cuando cambian los datos
+- Each component manages its own local state
+- Data is loaded from API in `ngOnInit()`
+- Components update reactively when data changes
 
-### 2.5 Estructura de Carpetas
+### 2.5 Folder Structure
 
 ```
 frontend/
 ├── src/
 │   ├── app/
-│   │   ├── app.component.ts          # Componente raíz y navbar
-│   │   ├── app.config.ts             # Configuración de la aplicación
-│   │   ├── app.routes.ts             # Definición de rutas
-│   │   ├── components/               # Componentes de la aplicación
+│   │   ├── app.component.ts          # Root component and navbar
+│   │   ├── app.config.ts             # Application configuration
+│   │   ├── app.routes.ts             # Route definition
+│   │   ├── components/               # Application components
 │   │   │   ├── login/
 │   │   │   ├── register/
 │   │   │   ├── map/
@@ -246,339 +246,288 @@ frontend/
 │   │   │   └── ranking/
 │   │   ├── guards/                   # Route guards
 │   │   │   └── auth.guard.ts
-│   │   ├── models/                   # Interfaces TypeScript
+│   │   ├── models/                   # TypeScript interfaces
 │   │   │   ├── user.model.ts
 │   │   │   ├── poi.model.ts
 │   │   │   ├── photo.model.ts
 │   │   │   └── rating.model.ts
-│   │   └── services/                 # Servicios de lógica de negocio
+│   │   └── services/                 # Business logic services
 │   │       ├── api.service.ts
 │   │       └── auth.service.ts
-│   ├── assets/                        # Archivos estáticos
-│   │   └── config.json               # Generado en runtime por Docker
-│   ├── environments/                  # Configuración de entornos
+│   ├── assets/                        # Static files
+│   │   └── config.json               # Generated at runtime by Docker
+│   ├── environments/                  # Environment configuration
 │   │   └── environment.ts
-│   ├── index.html                     # HTML principal
-│   └── styles.css                     # Estilos globales
-├── Dockerfile                         # Build multi-stage
-├── entrypoint.sh                     # Script para generar config.json
-├── nginx.conf                        # Configuración de Nginx
-├── package.json                      # Dependencias npm
-└── angular.json                      # Configuración de Angular CLI
+│   ├── index.html                     # Main HTML
+│   └── styles.css                     # Global styles
+├── Dockerfile                         # Multi-stage build
+├── entrypoint.sh                     # Script to generate config.json
+├── nginx.conf                        # Nginx configuration
+├── package.json                      # npm dependencies
+└── angular.json                      # Angular CLI configuration
 ```
 
 ---
 
-## 3. Funcionalidad Implementada
+## 3. Implemented Functionality
 
-### 3.1 Autenticación y Registro
+### 3.1 Authentication and Registration
 
-#### 3.1.1 Registro de Usuario
+#### 3.1.1 User Registration
 
-- Formulario de registro con validación
-- Campos: nombre, email, contraseña
-- Validación de email y contraseña
-- Redirección automática al mapa después del registro
-- Almacenamiento de usuario en `localStorage`
+- Registration form with validation
+- Fields: name, email, password
+- Email and password validation
+- Automatic redirection to map after registration
+- User storage in `localStorage`
 
-#### 3.1.2 Inicio de Sesión
+#### 3.1.2 Login
 
-- Formulario de login con email y contraseña
-- Validación de credenciales contra la API
-- Almacenamiento de sesión en `localStorage`
-- Redirección automática al mapa después del login
+- Login form with email and password
+- Credential validation against API
+- Session storage in `localStorage`
+- Automatic redirection to map after login
 
-#### 3.1.3 Gestión de Sesión
+#### 3.1.3 Session Management
 
-- Persistencia de sesión entre recargas de página
-- Actualización automática de puntos del usuario
-- Logout con limpieza de sesión
-- Protección de rutas con `authGuard`
+- Session persistence between page reloads
+- Automatic user points update
+- Logout with session cleanup
+- Route protection with `authGuard`
 
-### 3.2 Visualización de POIs
+### 3.2 POI Visualization
 
-#### 3.2.1 Mapa Interactivo
+#### 3.2.1 Interactive Map
 
-- Mapa Leaflet centrado en Málaga (por defecto)
-- Carga de todos los POIs desde la API con paginación
-- Marcadores personalizados según etiquetas del POI
-- Popups con información básica del POI
-- Navegación a detalles al hacer clic en marcador o popup
-- Visualización de coordenadas al hacer clic en el mapa
+- Leaflet map centered on Málaga (by default)
+- Loads all POIs from API with pagination
+- Custom markers according to POI tags
+- Popups with basic POI information
+- Navigation to details when clicking on marker or popup
+- Coordinate display when clicking on map
 
-#### 3.2.2 Lista de POIs
+#### 3.2.2 POI List
 
-- Vista de lista con tarjetas para cada POI
-- Carga paginada de todos los POIs (lotes de 1000)
-- Información mostrada: nombre, descripción, imagen, rating
-- Navegación a detalles al hacer clic en tarjeta
-- Diseño responsive con grid
+- List view with cards for each POI
+- Paginated loading of all POIs (batches of 1000)
+- Information displayed: name, description, image, rating
+- Navigation to details when clicking on card
+- Responsive design with grid
 
-#### 3.2.3 Detalles de POI
+#### 3.2.3 POI Details
 
-- Información completa del POI
-- Imagen principal del POI
-- Información del autor
-- Rating promedio y número de valoraciones
-- Galería de fotos asociadas
-- Ubicación geográfica (coordenadas)
+- Complete POI information
+- Main POI image
+- Author information
+- Average rating and number of ratings
+- Gallery of associated photos
+- Geographic location (coordinates)
 
-### 3.3 Creación y Gestión de POIs
+### 3.3 POI Creation and Management
 
-#### 3.3.1 Crear POI
+#### 3.3.1 Create POI
 
-- Formulario de creación desde el mapa
-- Selección de ubicación haciendo clic en el mapa
-- Campos: nombre, descripción, etiquetas, imagen
-- Validación de campos requeridos
-- Subida de imagen a través de FormData
-- Actualización automática de puntos del usuario
-- Navegación automática a detalles del POI creado
+- Creation form from map
+- Location selection by clicking on map
+- Fields: name, description, tags, image
+- Required field validation
+- Image upload via FormData
+- Automatic user points update
+- Automatic navigation to created POI details
 
-#### 3.3.2 Editar POI
+#### 3.3.2 Edit POI
 
-- Formulario de edición visible solo si el usuario es el autor
-- Campos editables: nombre, descripción, etiquetas
-- Validación de campos
-- Actualización en tiempo real después de guardar
+- Edit form visible only if user is the author
+- Editable fields: name, description, tags
+- Field validation
+- Real-time update after saving
 
-#### 3.3.3 Eliminar POI
+#### 3.3.3 Delete POI
 
-- Botón de eliminación visible solo si el usuario es el autor
-- Confirmación antes de eliminar
-- Eliminación de POI y recursos asociados
-- Redirección al mapa después de eliminar
-- Actualización automática de puntos del usuario
+- Delete button visible only if user is the author
+- Confirmation before deleting
+- POI and associated resources deletion
+- Redirection to map after deletion
+- Automatic user points update
 
-### 3.4 Gestión de Fotografías
+### 3.4 Photo Management
 
-#### 3.4.1 Subir Foto
+#### 3.4.1 Upload Photo
 
-- Formulario de subida desde detalles de POI
-- Campos: descripción (opcional), archivo de imagen
-- Validación de archivo requerido
-- Subida mediante FormData
-- Actualización automática de la galería
-- Actualización automática de puntos del usuario
+- Upload form from POI details
+- Fields: description (optional), image file
+- Required file validation
+- Upload via FormData
+- Automatic gallery update
+- Automatic user points update
 
-#### 3.4.2 Visualizar Fotos
+#### 3.4.2 View Photos
 
-- Galería de fotos en detalles de POI
-- Visualización en modal al hacer clic en foto
-- Información de cada foto: descripción, rating, autor
-- Enlaces a POI desde fotos en perfil de usuario
+- Photo gallery in POI details
+- Modal display when clicking on photo
+- Information for each photo: description, rating, author
+- Links to POI from photos in user profile
 
-#### 3.4.3 Eliminar Foto
+#### 3.4.3 Delete Photo
 
-- Botón de eliminación visible solo si el usuario es el autor
-- Confirmación antes de eliminar
-- Actualización automática de la galería
+- Delete button visible only if user is the author
+- Confirmation before deleting
+- Automatic gallery update
 
-### 3.5 Sistema de Valoraciones
+### 3.5 Rating System
 
-#### 3.5.1 Valorar POI
+#### 3.5.1 Rate POI
 
-- Desplegable de puntuación (1-10)
-- Validación de puntuación seleccionada
-- Envío de valoración a la API
-- Actualización automática de rating del POI
-- Actualización automática de puntos del usuario
+- Rating dropdown (1-10)
+- Selected rating validation
+- Rating submission to API
+- Automatic POI rating update
+- Automatic user points update
 
-#### 3.5.2 Valorar Foto
+#### 3.5.2 Rate Photo
 
-- Desplegable de puntuación (1-10) por cada foto
-- Validación de puntuación seleccionada
-- Envío de valoración a la API
-- Actualización automática de rating de la foto
-- Actualización automática de puntos del usuario
+- Rating dropdown (1-10) for each photo
+- Selected rating validation
+- Rating submission to API
+- Automatic photo rating update
+- Automatic user points update
 
-### 3.6 Perfil de Usuario
+### 3.6 User Profile
 
-#### 3.6.1 Información del Perfil
+#### 3.6.1 Profile Information
 
-- Nombre y email del usuario
-- Puntos totales, POIs creados, fotos subidas
-- Actualización automática de puntos en tiempo real
+- User name and email
+- Total points, POIs created, photos uploaded
+- Automatic real-time points update
 
-#### 3.6.2 POIs Creados
+#### 3.6.2 Created POIs
 
-- Lista de todos los POIs creados por el usuario
-- Carga paginada para manejar grandes volúmenes
-- Enlaces a detalles de cada POI
-- Información: nombre, descripción, imagen, rating
+- List of all POIs created by the user
+- Paginated loading to handle large volumes
+- Links to details of each POI
+- Information: name, description, image, rating
 
-#### 3.6.3 Fotos Subidas
+#### 3.6.3 Uploaded Photos
 
-- Lista de todas las fotos subidas por el usuario
-- Carga desde todos los POIs con paginación
-- Enlaces al POI asociado de cada foto
-- Información: descripción, rating, POI asociado
+- List of all photos uploaded by the user
+- Loading from all POIs with pagination
+- Links to associated POI of each photo
+- Information: description, rating, associated POI
 
-### 3.7 Ranking Global
+### 3.7 Global Ranking
 
-#### 3.7.1 Tabla de Líderes
+#### 3.7.1 Leaderboard
 
-- Lista de usuarios ordenados por `total_score`
-- Información: nombre, email, puntos totales
-- Carga desde la API con límite configurable
+- List of users ordered by `total_score`
+- Information: name, email, total points
+- Loading from API with configurable limit
 
-### 3.8 Navegación y UX
+### 3.8 Navigation and UX
 
 #### 3.8.1 Navbar
 
-- Logo de la aplicación (imagen desde S3)
-- Enlaces de navegación: Mapa, Lista de POIs, Ranking
-- Enlace a perfil del usuario autenticado
-- Información del usuario: nombre y puntos totales
-- Botón de logout
-- Ocultación automática en páginas de login/registro
+- Application logo (image from S3)
+- Navigation links: Map, POI List, Ranking
+- Link to authenticated user profile
+- User information: name and total points
+- Logout button
+- Automatic hiding on login/registration pages
 
-#### 3.8.2 Actualización Automática
+#### 3.8.2 Automatic Update
 
-- Puntos del usuario se actualizan automáticamente después de:
-  - Crear POI
-  - Subir foto
-  - Valorar POI
-  - Valorar foto
-  - Eliminar POI
-- Sincronización mediante RxJS Subject
+- User points are automatically updated after:
+  - Creating POI
+  - Uploading photo
+  - Rating POI
+  - Rating photo
+  - Deleting POI
+- Synchronization via RxJS Subject
 
 ---
 
-## 4. Descripción de la API Desarrollada y URLs de APIs Externas
+## 4. Communication with Developed API and External API URLs
 
-### 4.1 API Backend Utilizada
+### 4.1 Backend API Used
 
-El frontend consume la **API REST desarrollada en FastAPI** (backend). Todos los endpoints requieren autenticación mediante header `X-API-Key`.
-
-#### 4.1.1 Endpoints de Usuarios
-
-| Método | Endpoint | Uso en Frontend |
-|--------|----------|-----------------|
-| POST | `/users/` | Registro de nuevos usuarios |
-| POST | `/users/authenticate` | Login de usuarios |
-| GET | `/users/{user_id}` | Obtener información de usuario |
-| GET | `/users/{user_id}/profile` | Obtener perfil completo con estadísticas |
-| GET | `/users/ranking/global` | Obtener ranking de usuarios |
-
-#### 4.1.2 Endpoints de POIs
-
-| Método | Endpoint | Uso en Frontend |
-|--------|----------|-----------------|
-| POST | `/pois/` | Crear nuevo POI (con imagen) |
-| GET | `/pois/` | Listar POIs con paginación |
-| GET | `/pois/{poi_id}` | Obtener detalles de un POI |
-| PUT | `/pois/{poi_id}` | Actualizar POI existente |
-| DELETE | `/pois/{poi_id}` | Eliminar POI |
-
-#### 4.1.3 Endpoints de Fotos
-
-| Método | Endpoint | Uso en Frontend |
-|--------|----------|-----------------|
-| POST | `/photos/` | Subir foto a un POI |
-| GET | `/photos/poi/{poi_id}` | Obtener fotos de un POI |
-| GET | `/photos/{photo_id}` | Obtener detalles de una foto |
-| DELETE | `/photos/{photo_id}` | Eliminar foto |
-
-#### 4.1.4 Endpoints de Valoraciones
-
-| Método | Endpoint | Uso en Frontend |
-|--------|----------|-----------------|
-| POST | `/ratings/` | Crear valoración (POI o foto) |
-| GET | `/ratings/{rating_id}` | Obtener valoración específica |
-| DELETE | `/ratings/{rating_id}` | Eliminar valoración |
-
-### 4.2 Configuración de la API
-
-La URL base de la API y la API Key se configuran mediante `config.json`, generado en runtime por Docker desde variables de entorno:
+The frontend consumes the **REST API developed in FastAPI** (backend). All endpoints require authentication via `X-API-Key` header. The API base URL and API Key are configured via `config.json`, generated at runtime by Docker from environment variables:
 
 ```json
 {
   "apiUrl": "http://localhost:8000",
-  "apiKey": "tu-api-key-aqui"
+  "apiKey": "your-api-key-here"
 }
 ```
 
-**Decisión técnica**: Esta configuración dinámica permite diferentes entornos (desarrollo, producción) sin necesidad de rebuild de la aplicación.
+**Technical decision**: This dynamic configuration allows different environments (development, production) without the need to rebuild the application.
 
-### 4.3 URLs de APIs Externas Utilizadas
+### 4.2 External API URLs Used
 
-#### 4.3.1 AWS S3
+#### 4.2.1 AWS S3
 
-- **URL de almacenamiento**: `https://urbanspot-bucket-2025.s3.eu-central-1.amazonaws.com/`
-- **Uso**:
-  - Imágenes de POIs: `{bucket}/pois/{filename}`
-  - Imágenes de fotos: `{bucket}/photos/{filename}`
-  - Logo de la aplicación: `{bucket}/20251230_002924_e880896d.png`
-- **Acceso**: URLs públicas, las imágenes se sirven directamente desde S3
+- **Storage URL**: `https://urbanspot-bucket-2025.s3.eu-central-1.amazonaws.com/`
+- **Usage**:
+  - POI images: `{bucket}/pois/{filename}`
+  - Photo images: `{bucket}/photos/{filename}`
+  - Application logo: `{bucket}/20251230_002924_e880896d.png`
+- **Access**: Public URLs, images are served directly from S3
 
-#### 4.3.2 Leaflet CDN
+#### 4.2.2 Leaflet CDN
 
 - **CSS**: `https://unpkg.com/leaflet@1.9.4/dist/leaflet.css`
-- **Uso**: Estilos para el mapa interactivo
-- **Nota**: Leaflet se instala como dependencia npm, pero los estilos se cargan desde CDN en `index.html`
+- **Usage**: Styles for the interactive map
+- **Note**: Leaflet is installed as an npm dependency, but styles are loaded from CDN in `index.html`
 
-#### 4.3.3 MongoDB Atlas
+#### 4.2.3 MongoDB Atlas
 
-- **Acceso indirecto**: A través de la API backend
-- **Uso**: Almacenamiento de datos (usuarios, POIs, fotos, valoraciones)
-- **No hay conexión directa** desde el frontend por seguridad
-
-### 4.4 Autenticación
-
-Todas las peticiones HTTP (excepto las públicas) incluyen el header:
-
-```
-X-API-Key: {api-key}
-```
-
-La API key se obtiene de `config.json` y se inyecta automáticamente en todos los headers HTTP mediante `ApiService`.
+- **Indirect access**: Through the backend API
+- **Usage**: Data storage (users, POIs, photos, ratings)
+- **No direct connection** from the frontend for security
 
 ---
 
-## 5. Instrucciones de Instalación y Despliegue
+## 5. Installation and Deployment Instructions
 
-### 5.1 Requisitos Previos
+### 5.1 Prerequisites
 
-- **Docker** y **Docker Compose** instalados
-- **Node.js 20+** (solo para desarrollo local, no necesario en Docker)
-- Variables de entorno configuradas
+- **Docker** and **Docker Compose** installed
+- **Node.js 20+** (only for local development, not necessary in Docker)
+- Environment variables configured
 
-### 5.2 Configuración Local (Desarrollo)
+### 5.2 Local Configuration (Development)
 
-#### 5.2.1 Instalación de Dependencias
+#### 5.2.1 Dependency Installation
 
 ```bash
 cd frontend
 npm install
 ```
 
-#### 5.2.2 Configuración de Variables de Entorno
+#### 5.2.2 Environment Variable Configuration
 
-Crear archivo `src/assets/config.json` manualmente (solo para desarrollo local):
+Create `src/assets/config.json` file manually (only for local development):
 
 ```json
 {
   "apiUrl": "http://localhost:8000",
-  "apiKey": "tu-api-key-aqui"
+  "apiKey": "your-api-key-here"
 }
 ```
 
-**Nota**: En Docker, este archivo se genera automáticamente desde variables de entorno.
+**Note**: In Docker, this file is automatically generated from environment variables.
 
-#### 5.2.3 Ejecución en Desarrollo
+#### 5.2.3 Development Execution
 
 ```bash
 npm start
 ```
 
-La aplicación estará disponible en `http://localhost:4200`
+The application will be available at `http://localhost:4200`
 
-### 5.3 Despliegue con Docker
+### 5.3 Docker Deployment
 
-#### 5.3.1 Configuración en `docker-compose.yml`
+#### 5.3.1 Configuration in `docker-compose.yml`
 
-El frontend se configura mediante variables de entorno:
+The frontend is configured via environment variables:
 
 ```yaml
 frontend:
@@ -587,311 +536,208 @@ frontend:
     - "80:80"
   environment:
     - API_URL=http://backend:8000
-    - API_KEY=tu-api-key-aqui
+    - API_KEY=your-api-key-here
   depends_on:
     - backend
 ```
 
-#### 5.3.2 Build y Ejecución
+#### 5.3.2 Build and Execution
 
 ```bash
-# Desde la raíz del proyecto
+# From project root
 docker-compose build frontend
 docker-compose up -d frontend
 ```
 
-#### 5.3.3 Proceso de Build
+#### 5.3.3 Build Process
 
 1. **Stage 1 (Builder)**:
-   - Instala dependencias npm
-   - Compila la aplicación Angular
-   - Genera archivos estáticos en `dist/urbanspot/browser`
+   - Installs npm dependencies
+   - Compiles Angular application
+   - Generates static files in `dist/urbanspot/browser`
 
 2. **Stage 2 (Production)**:
-   - Copia archivos compilados a imagen Nginx
-   - Configura Nginx para servir la aplicación
-   - Ejecuta `entrypoint.sh` para generar `config.json`
+   - Copies compiled files to Nginx image
+   - Configures Nginx to serve the application
+   - Executes `entrypoint.sh` to generate `config.json`
 
-#### 5.3.4 Script `entrypoint.sh`
+#### 5.3.4 `entrypoint.sh` Script
 
-El script `entrypoint.sh` se ejecuta al iniciar el contenedor y:
+The `entrypoint.sh` script executes when starting the container and:
 
-1. Lee variables de entorno `API_URL` y `API_KEY`
-2. Genera `config.json` en `/usr/share/nginx/html/assets/`
-3. Inicia Nginx
+1. Reads `API_URL` and `API_KEY` environment variables
+2. Generates `config.json` in `/usr/share/nginx/html/assets/`
+3. Starts Nginx
 
-### 5.4 Despliegue en Producción
+### 5.4 Nginx Configuration
 
-#### Opción 1: Docker en Servidor
+The `nginx.conf` file configures Nginx to:
 
-1. **Configurar servidor**:
-   - Instalar Docker y Docker Compose
-   - Configurar firewall (puerto 80 o el que se use)
-
-2. **Subir código**:
-
-   ```bash
-   git clone <repo-url>
-   cd practica
-   ```
-
-3. **Configurar variables de entorno en `docker-compose.yml`**:
-
-   ```yaml
-   environment:
-     - API_URL=https://api.tudominio.com
-     - API_KEY=tu-api-key-de-produccion
-   ```
-
-4. **Construir y ejecutar**:
-
-   ```bash
-   docker-compose build frontend
-   docker-compose up -d frontend
-   ```
-
-5. **Configurar reverse proxy** (Nginx, Traefik) para:
-   - SSL/TLS (HTTPS)
-   - Dominio personalizado
-   - Rate limiting
-
-#### Opción 2: Plataformas PaaS
-
-##### **Vercel**
-
-1. Instalar Vercel CLI: `npm i -g vercel`
-2. Configurar variables de entorno en dashboard:
-   - `API_URL`
-   - `API_KEY`
-3. Desplegar: `vercel --prod`
-
-**Nota**: Requiere adaptar el build para generar `config.json` desde variables de entorno.
-
-##### **Netlify**
-
-1. Conectar repositorio en Netlify
-2. Configurar build command: `npm run build`
-3. Configurar variables de entorno en dashboard
-4. Desplegar automáticamente desde Git
-
-##### **GitHub Pages**
-
-1. Configurar GitHub Actions para build
-2. Generar `config.json` desde secrets
-3. Desplegar a GitHub Pages
-
-#### Opción 3: Servidor Estático + CDN
-
-1. **Build local o en CI/CD**:
-
-   ```bash
-   npm run build
-   ```
-
-2. **Generar `config.json` manualmente** con valores de producción
-
-3. **Subir a servidor estático**:
-   - AWS S3 + CloudFront
-   - Google Cloud Storage + CDN
-   - Azure Blob Storage + CDN
-
-### 5.5 Configuración de Nginx
-
-El archivo `nginx.conf` configura Nginx para:
-
-- Servir archivos estáticos de Angular
-- Redirigir todas las rutas a `index.html` (SPA routing)
-- Configurar headers de seguridad
-- Configurar compresión gzip
-
-### 5.6 Verificación Post-Despliegue
-
-1. **Verificar que la aplicación carga**: `http://localhost` (o URL de producción)
-2. **Verificar `config.json`**: `http://localhost/assets/config.json` debe existir
-3. **Probar login/registro**: Verificar que la comunicación con la API funciona
-4. **Probar creación de POI**: Verificar que las imágenes se suben correctamente
-5. **Verificar mapa**: Verificar que los POIs se cargan y muestran en el mapa
+- Serve Angular static files
+- Redirect all routes to `index.html` (SPA routing)
+- Configure security headers
+- Configure gzip compression
 
 ---
 
-## 6. Limitaciones de la Solución y Mejoras Futuras
+## 6. Solution Limitations and Future Improvements
 
-### 6.1 Limitaciones Actuales
+### 6.1 Current Limitations
 
-#### 6.1.1 Autenticación
+#### 6.1.1 Authentication
 
-- **Limitación**: No hay gestión de tokens JWT o refresh tokens
-- **Impacto**: La sesión se mantiene solo en `localStorage`, vulnerable a XSS
-- **Riesgo**: Si el `localStorage` se compromete, el atacante tiene acceso completo
+- **Limitation**: No JWT token or refresh token management
+- **Impact**: Session is maintained only in `localStorage`, vulnerable to XSS
+- **Risk**: If `localStorage` is compromised, the attacker has full access
 
-#### 6.1.2 Validación de Archivos
+#### 6.1.2 File Validation
 
-- **Limitación**: No se valida el tipo MIME real de las imágenes en el frontend
-- **Impacto**: Posible subida de archivos maliciosos
-- **Riesgo**: Seguridad y almacenamiento innecesario
+- **Limitation**: Real MIME type of images is not validated in the frontend
+- **Impact**: Possible upload of malicious files
+- **Risk**: Security and unnecessary storage
 
-#### 6.1.3 Tamaño de Archivos
+#### 6.1.3 File Size
 
-- **Limitación**: No hay límite explícito de tamaño de archivo en el frontend
-- **Impacto**: Posible subida de archivos muy grandes
-- **Riesgo**: Problemas de rendimiento y costos de almacenamiento
+- **Limitation**: No explicit file size limit in the frontend
+- **Impact**: Possible upload of very large files
+- **Risk**: Performance issues and storage costs
 
-#### 6.1.4 Paginación en Frontend
+#### 6.1.4 Frontend Pagination
 
-- **Limitación**: La paginación se maneja cargando todos los datos en lotes
-- **Impacto**: Para grandes volúmenes, se cargan muchos datos en memoria
-- **Riesgo**: Rendimiento degradado con muchos POIs/fotos
+- **Limitation**: Pagination is handled by loading all data in batches
+- **Impact**: For large volumes, many data are loaded in memory
+- **Risk**: Degraded performance with many POIs/photos
 
-#### 6.1.5 Manejo de Errores
+#### 6.1.5 Error Handling
 
-- **Limitación**: Manejo de errores básico, principalmente con `alert()`
-- **Impacto**: Experiencia de usuario no óptima
-- **Riesgo**: Errores críticos pueden no ser manejados adecuadamente
+- **Limitation**: Basic error handling, mainly with `alert()`
+- **Impact**: Non-optimal user experience
+- **Risk**: Critical errors may not be handled adequately
 
-#### 6.1.6 Estado Global
+#### 6.1.6 Global State
 
-- **Limitación**: No hay gestión de estado global (Redux, NgRx)
-- **Impacto**: Estado duplicado entre componentes
-- **Riesgo**: Inconsistencias de datos
+- **Limitation**: No global state management (Redux, NgRx)
+- **Impact**: Duplicated state between components
+- **Risk**: Data inconsistencies
 
-#### 6.1.7 Caché
+#### 6.1.7 Cache
 
-- **Limitación**: No hay sistema de caché para datos de la API
-- **Impacto**: Todas las peticiones van directamente a la API
-- **Riesgo**: Latencia y consumo innecesario de recursos
+- **Limitation**: No caching system for API data
+- **Impact**: All requests go directly to the API
+- **Risk**: Latency and unnecessary resource consumption
 
-#### 6.1.8 Optimización de Imágenes
+#### 6.1.8 Image Optimization
 
-- **Limitación**: Las imágenes se muestran en tamaño completo
-- **Impacto**: Carga lenta en conexiones lentas
-- **Riesgo**: Mala experiencia de usuario
+- **Limitation**: Images are displayed at full size
+- **Impact**: Slow loading on slow connections
+- **Risk**: Poor user experience
 
-#### 6.1.9 Búsqueda y Filtros
+#### 6.1.9 Search and Filters
 
-- **Limitación**: No hay búsqueda de POIs por nombre o descripción
-- **Impacto**: Difícil encontrar POIs específicos
-- **Riesgo**: Funcionalidad limitada
+- **Limitation**: No search for POIs by name or description
+- **Impact**: Difficult to find specific POIs
+- **Risk**: Limited functionality
 
 #### 6.1.10 Responsive Design
 
-- **Limitación**: Diseño responsive básico
-- **Impacto**: Experiencia no óptima en dispositivos móviles
-- **Riesgo**: Usabilidad limitada en móviles
+- **Limitation**: Basic responsive design
+- **Impact**: Non-optimal experience on mobile devices
+- **Risk**: Limited usability on mobile
 
-### 6.2 Mejoras Futuras
+### 6.2 Future Improvements
 
-#### 6.2.1 Autenticación y Seguridad
+#### 6.2.1 Authentication and Security
 
-- [ ] Implementar **JWT tokens** con refresh tokens
-- [ ] **HttpOnly cookies** para almacenar tokens
-- [ ] **CSRF protection** para formularios
-- [ ] **Sanitización de inputs** para prevenir XSS
+- [ ] Implement **JWT tokens** with refresh tokens
+- [ ] **HttpOnly cookies** to store tokens
+- [ ] **CSRF protection** for forms
+- [ ] **Input sanitization** to prevent XSS
 - [ ] **Content Security Policy (CSP)** headers
 
-#### 6.2.2 Validación y Seguridad de Archivos
+#### 6.2.2 File Validation and Security
 
-- [ ] Validación de tipo MIME real (magic bytes)
-- [ ] Límite de tamaño de archivo (ej: 10MB)
-- [ ] Preview de imagen antes de subir
-- [ ] Compresión de imágenes antes de subir
-- [ ] Redimensionamiento automático de imágenes grandes
+- [ ] Real MIME type validation (magic bytes)
+- [ ] File size limit (e.g., 10MB)
+- [ ] Image preview before upload
+- [ ] Image compression before upload
+- [ ] Automatic resizing of large images
 
-#### 6.2.3 Gestión de Estado
+#### 6.2.3 State Management
 
-- [ ] Implementar **NgRx** o **Akita** para estado global
-- [ ] Caché de datos de la API
-- [ ] Optimistic updates para mejor UX
-- [ ] Estado persistente entre sesiones
+- [ ] Implement **NgRx** or **Akita** for global state
+- [ ] API data cache
+- [ ] Optimistic updates for better UX
+- [ ] Persistent state between sessions
 
-#### 6.2.4 Funcionalidades de Búsqueda y Filtrado
+#### 6.2.4 Search and Filtering Features
 
-- [ ] **Búsqueda full-text** de POIs por nombre/descripción
-- [ ] **Filtros avanzados**: por etiquetas, rating, fecha
-- [ ] **Búsqueda geográfica**: POIs cercanos a ubicación
-- [ ] **Ordenamiento**: por fecha, rating, nombre
-- [ ] **Búsqueda en tiempo real** con debounce
+- [ ] **Full-text search** of POIs by name/description
+- [ ] **Advanced filters**: by tags, rating, date
+- [ ] **Geographic search**: POIs near location
+- [ ] **Sorting**: by date, rating, name
+- [ ] **Real-time search** with debounce
 
-#### 6.2.5 Optimización de Rendimiento
+#### 6.2.5 Performance Optimization
 
-- [ ] **Lazy loading de imágenes** (intersection observer)
-- [ ] **Virtual scrolling** para listas grandes
-- [ ] **Service Workers** para caché offline
-- [ ] **Code splitting** más agresivo
-- [ ] **Tree shaking** optimizado
-- [ ] **Compresión de assets** (gzip, brotli)
+- [ ] **Image lazy loading** (intersection observer)
+- [ ] **Virtual scrolling** for large lists
+- [ ] **Service Workers** for offline cache
+- [ ] More aggressive **code splitting**
+- [ ] Optimized **tree shaking**
+- [ ] **Asset compression** (gzip, brotli)
 
-#### 6.2.6 Mejoras de UX
+#### 6.2.6 UX Improvements
 
-- [ ] **Notificaciones toast** en lugar de `alert()`
-- [ ] **Loading skeletons** durante carga de datos
-- [ ] **Error boundaries** para manejo de errores
-- [ ] **Confirmaciones modales** elegantes
-- [ ] **Feedback visual** para todas las acciones
-- [ ] **Modo oscuro** (dark mode)
+- [ ] **Toast notifications** instead of `alert()`
+- [ ] **Loading skeletons** during data loading
+- [ ] **Error boundaries** for error handling
+- [ ] Elegant **modal confirmations**
+- [ ] **Visual feedback** for all actions
+- [ ] **Dark mode**
 
-#### 6.2.7 Funcionalidades Adicionales
+#### 6.2.7 Additional Features
 
-- [ ] **Favoritos**: Marcar POIs como favoritos
-- [ ] **Compartir POIs**: Enlaces compartibles
-- [ ] **Comentarios**: Sistema de comentarios en POIs
-- [ ] **Notificaciones**: Push notifications para eventos
-- [ ] **Mapa de calor**: Visualización de densidad de POIs
-- [ ] **Rutas**: Crear rutas entre POIs
-- [ ] **Exportar datos**: Descargar POIs en JSON/CSV
+- [ ] **Favorites**: Mark POIs as favorites
+- [ ] **Share POIs**: Shareable links
+- [ ] **Comments**: Comment system on POIs
+- [ ] **Notifications**: Push notifications for events
+- [ ] **Heat map**: POI density visualization
+- [ ] **Routes**: Create routes between POIs
+- [ ] **Export data**: Download POIs in JSON/CSV
 
 #### 6.2.8 Testing
 
-- [ ] **Tests unitarios** para servicios y componentes
-- [ ] **Tests de integración** para flujos completos
-- [ ] **Tests E2E** con Cypress o Playwright
-- [ ] **Cobertura de código** > 80%
-- [ ] **Tests de accesibilidad** (a11y)
+- [ ] **Unit tests** for services and components
+- [ ] **Integration tests** for complete flows
+- [ ] **E2E tests** with Cypress or Playwright
+- [ ] **Code coverage** > 80%
+- [ ] **Accessibility tests** (a11y)
 
-#### 6.2.9 Accesibilidad
+#### 6.2.9 Accessibility
 
-- [ ] **ARIA labels** completos
-- [ ] **Navegación por teclado** completa
+- [ ] Complete **ARIA labels**
+- [ ] Complete **keyboard navigation**
 - [ ] **Screen reader** compatible
-- [ ] **Contraste de colores** WCAG AA
-- [ ] **Focus management** adecuado
+- [ ] **Color contrast** WCAG AA
+- [ ] Adequate **focus management**
 
-#### 6.2.10 Internacionalización
+#### 6.2.10 Internationalization
 
-- [ ] **i18n** (Angular i18n) para múltiples idiomas
-- [ ] **Formateo de fechas** según locale
-- [ ] **Formateo de números** según locale
-
-#### 6.2.11 PWA (Progressive Web App)
-
-- [ ] **Service Worker** para funcionamiento offline
-- [ ] **Web App Manifest** para instalación
-- [ ] **Push notifications**
-- [ ] **Background sync**
-
-#### 6.2.12 Monitoreo y Analytics
-
-- [ ] **Error tracking** (Sentry, Rollbar)
-- [ ] **Analytics** (Google Analytics, Plausible)
-- [ ] **Performance monitoring** (Web Vitals)
-- [ ] **User session recording** (opcional)
+- [ ] **i18n** (Angular i18n) for multiple languages
+- [ ] **Date formatting** according to locale
+- [ ] **Number formatting** according to locale
 
 ---
 
-## 7. Conclusiones
+## 7. Conclusions
 
-El frontend de UrbanSpot ha sido desarrollado siguiendo **principios de arquitectura moderna** con Angular, utilizando **componentes reutilizables**, **servicios centralizados** y **routing avanzado**. La separación entre componentes de presentación y servicios de lógica de negocio facilita:
+The UrbanSpot frontend has been developed following **modern architecture principles** with Angular, using **reusable components**, **centralized services**, and **advanced routing**. The separation between presentation components and business logic services facilitates:
 
-- **Mantenibilidad**: Código organizado y fácil de entender
-- **Escalabilidad**: Fácil agregar nuevas funcionalidades
-- **Testabilidad**: Servicios y componentes pueden testearse independientemente
-- **Reutilización**: Servicios centralizados evitan duplicación de código
+- **Maintainability**: Organized and easy to understand code
+- **Scalability**: Easy to add new features
+- **Testability**: Services and components can be tested independently
+- **Reusability**: Centralized services avoid code duplication
 
-La solución actual cubre todos los requisitos básicos del caso de estudio, proporcionando una interfaz de usuario completa para gestionar POIs, fotos, valoraciones y visualizar rankings. La integración con el backend mediante API REST es robusta y la configuración dinámica mediante `config.json` permite flexibilidad en diferentes entornos.
+The current solution covers all basic requirements of the case study, providing a complete user interface for managing POIs, photos, ratings, and viewing rankings. Integration with the backend via REST API is robust and dynamic configuration via `config.json` allows flexibility in different environments.
 
-Las mejoras futuras propuestas permitirían llevar la aplicación a un nivel de producción empresarial, mejorando la seguridad, rendimiento, accesibilidad y experiencia de usuario.
-
----
-
-**Autor**: [Tu Nombre]  
-**Fecha**: [Fecha Actual]  
-**Versión**: 1.0.0
+The proposed future improvements would allow taking the application to an enterprise production level, improving security, performance, accessibility, and user experience.

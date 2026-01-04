@@ -1,72 +1,72 @@
-# Memoria Técnica - Backend UrbanSpot
+# Technical Documentation - UrbanSpot Backend
 
-## 1. Tecnologías Empleadas
+## 1. Technologies Used
 
-### 1.1 Lenguajes y Frameworks
+### 1.1 Languages and Frameworks
 
-- **Python 3.11**: Lenguaje de programación principal, elegido por su sintaxis clara, ecosistema robusto y excelente soporte para desarrollo asíncrono.
-- **FastAPI 0.104+**: Framework web moderno y de alto rendimiento para construir APIs REST. Seleccionado por:
-  - Generación automática de documentación interactiva (Swagger/OpenAPI)
-  - Soporte nativo para operaciones asíncronas
-  - Validación automática de datos con Pydantic
-  - Alto rendimiento comparable a Node.js y Go
-- **Uvicorn**: Servidor ASGI de alto rendimiento para ejecutar la aplicación FastAPI.
+- **Python 3.11**: Main programming language, chosen for its clear syntax, robust ecosystem, and excellent support for asynchronous development.
+- **FastAPI 0.104+**: Modern, high-performance web framework for building REST APIs. Selected for:
+  - Automatic generation of interactive documentation (Swagger/OpenAPI)
+  - Native support for asynchronous operations
+  - Automatic data validation with Pydantic
+  - High performance comparable to Node.js and Go
+- **Uvicorn**: High-performance ASGI server for running the FastAPI application.
 
-### 1.2 Base de Datos y Almacenamiento
+### 1.2 Database and Storage
 
-- **MongoDB Atlas**: Base de datos NoSQL en la nube para almacenar:
-  - Usuarios y sus credenciales
-  - Puntos de interés (POIs)
-  - Fotografías (metadatos)
-  - Valoraciones
-  - Sistema de puntuación y gamificación
+- **MongoDB Atlas**: Cloud NoSQL database for storing:
+  - Users and their credentials
+  - Points of interest (POIs)
+  - Photographs (metadata)
+  - Ratings
+  - Scoring and gamification system
   
-  **Decisión técnica**: MongoDB fue elegido por su flexibilidad para manejar documentos JSON, escalabilidad horizontal, y su capacidad para almacenar estructuras de datos anidadas sin necesidad de esquemas rígidos.
+  **Technical decision**: MongoDB was chosen for its flexibility in handling JSON documents, horizontal scalability, and its ability to store nested data structures without rigid schemas.
 
-- **Motor 3.3+**: Driver asíncrono oficial de MongoDB para Python, permitiendo operaciones no bloqueantes.
+- **Motor 3.3+**: Official asynchronous MongoDB driver for Python, enabling non-blocking operations.
 
-- **AWS S3**: Servicio de almacenamiento de objetos para fotografías y archivos multimedia.
+- **AWS S3**: Object storage service for photographs and multimedia files.
   
-  **Decisión técnica**: S3 fue seleccionado por su alta disponibilidad, escalabilidad automática, y costos reducidos para almacenamiento de archivos estáticos. La integración mediante `boto3` permite gestión eficiente de archivos.
+  **Technical decision**: S3 was selected for its high availability, automatic scalability, and reduced costs for static file storage. Integration through `boto3` enables efficient file management.
 
-### 1.3 Seguridad y Autenticación
+### 1.3 Security and Authentication
 
-- **Passlib con bcrypt**: Biblioteca para hashing seguro de contraseñas.
-  - **Decisión técnica**: bcrypt es un algoritmo de hashing robusto que incluye salt automático y es resistente a ataques de fuerza bruta. La limitación de 72 bytes es manejada explícitamente en la validación.
+- **Passlib with bcrypt**: Library for secure password hashing.
+  - **Technical decision**: bcrypt is a robust hashing algorithm that includes automatic salt and is resistant to brute force attacks. The 72-byte limitation is explicitly handled in validation.
 
-- **API Key Authentication**: Sistema de autenticación basado en API Key mediante header `X-API-Key`.
-  - **Decisión técnica**: Implementado como medida de seguridad básica para proteger los endpoints. En producción, se recomienda implementar OAuth 2.0 completo (actualmente preparado en configuración pero no implementado).
+- **API Key Authentication**: Authentication system based on API Key through `X-API-Key` header.
+  - **Technical decision**: Implemented as a basic security measure to protect endpoints. In production, implementing full OAuth 2.0 is recommended (currently prepared in configuration but not implemented).
 
-### 1.4 Validación y Serialización
+### 1.4 Validation and Serialization
 
-- **Pydantic 2.5+**: Biblioteca para validación de datos y serialización.
-  - Validación automática de tipos
-  - Validación de email, coordenadas geográficas, etc.
-  - Serialización automática a JSON
+- **Pydantic 2.5+**: Library for data validation and serialization.
+  - Automatic type validation
+  - Email validation, geographic coordinates, etc.
+  - Automatic JSON serialization
 
-### 1.5 Contenedores y Despliegue
+### 1.5 Containers and Deployment
 
-- **Docker**: Contenedorización de la aplicación para garantizar consistencia entre entornos.
-- **Docker Compose**: Orquestación de servicios y gestión de variables de entorno.
-- **UV**: Gestor de paquetes Python moderno y rápido, utilizado en el proceso de build del Dockerfile.
+- **Docker**: Application containerization to ensure consistency across environments.
+- **Docker Compose**: Service orchestration and environment variable management.
+- **UV**: Modern and fast Python package manager, used in the Dockerfile build process.
 
-### 1.6 Servicios Cloud Externos
+### 1.6 External Cloud Services
 
-- **MongoDB Atlas**: Base de datos gestionada en la nube
+- **MongoDB Atlas**: Managed cloud database
   - URL: `https://www.mongodb.com/cloud/atlas`
-  - Conexión mediante URI: `mongodb+srv://...`
+  - Connection via URI: `mongodb+srv://...`
 
-- **AWS S3**: Almacenamiento de objetos
+- **AWS S3**: Object storage
   - URL: `https://aws.amazon.com/s3/`
-  - Región configurable (por defecto: `us-east-1`)
+  - Configurable region (default: `us-east-1`)
 
 ---
 
-## 2. Descripción Técnica de la Aplicación Web
+## 2. Technical Description of the Web Application
 
-### 2.1 Arquitectura del Sistema
+### 2.1 System Architecture
 
-La aplicación sigue una **arquitectura en capas** con separación clara de responsabilidades:
+The application follows a **layered architecture** with clear separation of responsibilities:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -74,10 +74,10 @@ La aplicación sigue una **arquitectura en capas** con separación clara de resp
 │  (Routes, Middleware, Dependencies)     │
 └──────────────┬──────────────────────────┘
                │
-┌──────────────▼──────────────────────────┐
+┌──────────────▼───────────────────────────┐
 │         Service Layer                    │
 │  (Business Logic, Gamification)          │
-└──────────────┬──────────────────────────┘
+└──────────────┬───────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
 │      Storage Abstraction Layer          │
@@ -86,19 +86,19 @@ La aplicación sigue una **arquitectura en capas** con separación clara de resp
                │
     ┌──────────┴──────────┐
     │                     │
-┌───▼──────┐      ┌───────▼──────┐
+┌───▼──────┐      ┌───────▼───────┐
 │ MongoDB  │      │   AWS S3      │
 │  Atlas   │      │  (Storage)    │
 └──────────┘      └───────────────┘
 ```
 
-### 2.2 Patrón de Diseño: Protocolos (Interfaces)
+### 2.2 Design Pattern: Protocols (Interfaces)
 
-**Una de las decisiones arquitectónicas más importantes** es el uso de **protocolos (interfaces abstractas)** para abstraer las implementaciones de base de datos y almacenamiento de archivos.
+**One of the most important architectural decisions** is the use of **protocols (abstract interfaces)** to abstract database and file storage implementations.
 
-#### 2.2.1 Protocolo `DataDB`
+#### 2.2.1 `DataDB` Protocol
 
-El protocolo `DataDB` (`app/utils/protocols.py`) define una interfaz abstracta para operaciones de base de datos:
+The `DataDB` protocol (`app/utils/protocols.py`) defines an abstract interface for database operations:
 
 ```python
 class DataDB(ABC):
@@ -112,18 +112,18 @@ class DataDB(ABC):
     async def aggregate(collection, pipeline) -> List[Dict]
 ```
 
-**Implementación actual**: `MongoDBDataDB` (`app/utils/mongodb_storage.py`)
+**Current implementation**: `MongoDBDataDB` (`app/utils/mongodb_storage.py`)
 
-**Beneficios de esta decisión**:
+**Benefits of this decision**:
 
-- **Desacoplamiento**: La lógica de negocio no depende de MongoDB específicamente
-- **Intercambiabilidad**: Se puede cambiar a PostgreSQL, Firestore, DynamoDB, etc., sin modificar servicios
-- **Testabilidad**: Fácil crear mocks para testing
-- **Mantenibilidad**: Cambios en la implementación de BD no afectan el resto del código
+- **Decoupling**: Business logic does not depend specifically on MongoDB
+- **Interchangeability**: Can switch to PostgreSQL, Firestore, DynamoDB, etc., without modifying services
+- **Testability**: Easy to create mocks for testing
+- **Maintainability**: Changes in database implementation do not affect the rest of the code
 
-#### 2.2.2 Protocolo `FileDB`
+#### 2.2.2 `FileDB` Protocol
 
-El protocolo `FileDB` define una interfaz para almacenamiento de archivos:
+The `FileDB` protocol defines an interface for file storage:
 
 ```python
 class FileDB(ABC):
@@ -132,17 +132,17 @@ class FileDB(ABC):
     async def get_file_url(file_path) -> str
 ```
 
-**Implementación actual**: `S3FileDB` (`app/utils/s3_storage.py`)
+**Current implementation**: `S3FileDB` (`app/utils/s3_storage.py`)
 
-**Beneficios**:
+**Benefits**:
 
-- **Flexibilidad**: Se puede cambiar a Google Cloud Storage, Azure Blob Storage, o almacenamiento local sin tocar la lógica de negocio
-- **Consistencia**: Misma interfaz independientemente del proveedor
-- **Escalabilidad**: Fácil migrar a otro servicio si S3 no cumple requisitos
+- **Flexibility**: Can switch to Google Cloud Storage, Azure Blob Storage, or local storage without touching business logic
+- **Consistency**: Same interface regardless of provider
+- **Scalability**: Easy to migrate to another service if S3 does not meet requirements
 
-#### 2.2.3 Clase `Storage`
+#### 2.2.3 `Storage` Class
 
-La clase `Storage` (`app/utils/storage.py`) actúa como **facade** que combina ambas abstracciones:
+The `Storage` class (`app/utils/storage.py`) acts as a **facade** that combines both abstractions:
 
 ```python
 class Storage:
@@ -151,21 +151,21 @@ class Storage:
         self.data_db = data_db
 ```
 
-**Decisión de diseño**: Esta clase centraliza el acceso a ambos sistemas de almacenamiento, simplificando la inyección de dependencias en los servicios.
+**Design decision**: This class centralizes access to both storage systems, simplifying dependency injection in services.
 
-### 2.3 Diseño de la Base de Datos
+### 2.3 Database Design
 
-#### 2.3.1 Colecciones MongoDB
+#### 2.3.1 MongoDB Collections
 
-La base de datos `urbanspot` contiene las siguientes colecciones:
+The `urbanspot` database contains the following collections:
 
-##### **Colección: `users`**
+##### **Collection: `users`**
 
 ```json
 {
   "_id": "ObjectId",
   "name": "string",
-  "email": "string (único)",
+  "email": "string (unique)",
   "hashed_password": "string",
   "poi_score": "int (default: 0)",
   "photo_score": "int (default: 0)",
@@ -175,22 +175,22 @@ La base de datos `urbanspot` contiene las siguientes colecciones:
 }
 ```
 
-**Índices recomendados**:
+**Recommended indexes**:
 
-- `email`: único
-- `total_score`: para ranking eficiente
+- `email`: unique
+- `total_score`: for efficient ranking
 
-##### **Colección: `pois`**
+##### **Collection: `pois`**
 
 ```json
 {
   "_id": "ObjectId",
   "name": "string",
   "description": "string",
-  "latitude": "float (-90 a 90)",
-  "longitude": "float (-180 a 180)",
+  "latitude": "float (-90 to 90)",
+  "longitude": "float (-180 to 180)",
   "tags": ["string"],
-  "image_url": "string (URL S3)",
+  "image_url": "string (S3 URL)",
   "author_id": "string (ref users._id)",
   "rating_count": "int (default: 0)",
   "average_rating": "float (0-10, default: 0.0)",
@@ -199,21 +199,21 @@ La base de datos `urbanspot` contiene las siguientes colecciones:
 }
 ```
 
-**Índices recomendados**:
+**Recommended indexes**:
 
-- `author_id`: para búsquedas por autor
-- `tags`: para filtrado por etiquetas
-- `{latitude, longitude}`: índice geoespacial para búsquedas por proximidad (futuro)
+- `author_id`: for searches by author
+- `tags`: for filtering by tags
+- `{latitude, longitude}`: geospatial index for proximity searches (future)
 
-##### **Colección: `photos`**
+##### **Collection: `photos`**
 
 ```json
 {
   "_id": "ObjectId",
   "poi_id": "string (ref pois._id)",
   "author_id": "string (ref users._id)",
-  "image_url": "string (URL S3)",
-  "description": "string (opcional)",
+  "image_url": "string (S3 URL)",
+  "description": "string (optional)",
   "rating_count": "int (default: 0)",
   "average_rating": "float (0-10, default: 0.0)",
   "created_at": "datetime",
@@ -221,629 +221,541 @@ La base de datos `urbanspot` contiene las siguientes colecciones:
 }
 ```
 
-**Índices recomendados**:
+**Recommended indexes**:
 
-- `poi_id`: para obtener fotos de un POI
-- `author_id`: para estadísticas de usuario
+- `poi_id`: to get photos of a POI
+- `author_id`: for user statistics
 
-##### **Colección: `ratings`**
+##### **Collection: `ratings`**
 
 ```json
 {
   "_id": "ObjectId",
   "user_id": "string (ref users._id)",
   "target_type": "string ('poi' | 'photo')",
-  "target_id": "string (ref pois._id o photos._id)",
+  "target_id": "string (ref pois._id or photos._id)",
   "score": "int (0-10)",
   "created_at": "datetime",
   "updated_at": "datetime"
 }
 ```
 
-**Índices recomendados**:
+**Recommended indexes**:
 
-- `{target_type, target_id}`: compuesto, para obtener valoraciones de un elemento
-- `{user_id, target_type, target_id}`: compuesto único, para evitar duplicados
+- `{target_type, target_id}`: compound, to get ratings of an element
+- `{user_id, target_type, target_id}`: unique compound, to avoid duplicates
 
-#### 2.3.2 Decisiones de Diseño de BD
+#### 2.3.2 Database Design Decisions
 
-1. **NoSQL sobre SQL**: MongoDB permite flexibilidad en esquemas y escalabilidad horizontal sin necesidad de migraciones complejas.
+1. **NoSQL over SQL**: MongoDB allows schema flexibility and horizontal scalability without complex migrations.
 
-2. **Referencias por ID**: Se almacenan IDs como strings en lugar de referencias ObjectId para simplificar la serialización JSON.
+2. **ID References**: IDs are stored as strings instead of ObjectId references to simplify JSON serialization.
 
-3. **Denormalización controlada**: Se almacenan `rating_count` y `average_rating` en POIs y fotos para evitar cálculos costosos en cada consulta.
+3. **Controlled Denormalization**: `rating_count` and `average_rating` are stored in POIs and photos to avoid expensive calculations on each query.
 
-4. **Timestamps automáticos**: `created_at` y `updated_at` se gestionan automáticamente en el protocolo `DataDB`.
+4. **Automatic Timestamps**: `created_at` and `updated_at` are automatically managed in the `DataDB` protocol.
 
-### 2.4 Estructura de Carpetas
+### 2.4 Folder Structure
 
 ```
 backend/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py              # Punto de entrada FastAPI
-│   ├── config.py            # Configuración con Pydantic Settings
-│   ├── models/              # Modelos Pydantic
+│   ├── main.py              # FastAPI entry point
+│   ├── config.py            # Configuration with Pydantic Settings
+│   ├── models/              # Pydantic models
 │   │   ├── user.py
 │   │   ├── poi.py
 │   │   ├── photo.py
 │   │   └── rating.py
-│   ├── routes/              # Endpoints de la API
+│   ├── routes/              # API endpoints
 │   │   ├── users.py
 │   │   ├── pois.py
 │   │   ├── photos.py
 │   │   └── ratings.py
-│   ├── services/            # Lógica de negocio
+│   ├── services/            # Business logic
 │   │   ├── user_service.py
 │   │   ├── poi_service.py
 │   │   ├── photo_service.py
 │   │   ├── rating_service.py
 │   │   └── gamification.py
-│   └── utils/               # Utilidades y abstracciones
-│       ├── protocols.py     # Protocolos DataDB y FileDB
-│       ├── storage.py       # Clase Storage
+│   └── utils/               # Utilities and abstractions
+│       ├── protocols.py     # DataDB and FileDB protocols
+│       ├── storage.py       # Storage class
 │       ├── mongodb_storage.py
 │       ├── s3_storage.py
 │       ├── dependencies.py
 │       ├── auth.py
 │       └── security.py
-├── pyproject.toml           # Dependencias y configuración
+├── pyproject.toml           # Dependencies and configuration
 └── README.md
 ```
 
 ---
 
-## 3. Funcionalidad Implementada
+## 3. Implemented Functionality
 
-### 3.1 Gestión de Usuarios
+### 3.1 User Management
 
-#### 3.1.1 Creación de Usuario (`POST /users/`)
+#### 3.1.1 User Creation (`POST /users/`)
 
-- **Propósito**: Registrar nuevos usuarios en el sistema
-- **Validaciones**:
-  - Email único
-  - Contraseña mínimo 6 caracteres
-  - Contraseña máximo 72 bytes (limitación bcrypt)
-  - Email válido (validación Pydantic)
-- **Proceso**:
-  1. Validar datos de entrada
-  2. Verificar email no existente
-  3. Hashear contraseña con bcrypt
-  4. Crear usuario con puntuaciones inicializadas en 0
-  5. Retornar usuario (sin contraseña)
+- **Purpose**: Register new users in the system
+- **Validations**:
+  - Unique email
+  - Password minimum 6 characters
+  - Password maximum 72 bytes (bcrypt limitation)
+  - Valid email (Pydantic validation)
+- **Process**:
+  1. Validate input data
+  2. Verify email does not exist
+  3. Hash password with bcrypt
+  4. Create user with scores initialized to 0
+  5. Return user (without password)
 
-#### 3.1.2 Autenticación (`POST /users/authenticate`)
+#### 3.1.2 Authentication (`POST /users/authenticate`)
 
-- **Propósito**: Verificar credenciales y obtener información del usuario
-- **Proceso**:
-  1. Buscar usuario por email
-  2. Verificar contraseña con bcrypt
-  3. Retornar usuario si es válido, 401 si no
+- **Purpose**: Verify credentials and obtain user information
+- **Process**:
+  1. Search user by email
+  2. Verify password with bcrypt
+  3. Return user if valid, 401 if not
 
-#### 3.1.3 Obtener Usuario (`GET /users/{user_id}`)
+#### 3.1.3 Get User (`GET /users/{user_id}`)
 
-- **Propósito**: Obtener información básica de un usuario
-- **Uso**: Para mostrar perfiles, autor de POIs, etc.
+- **Purpose**: Obtain basic information of a user
+- **Usage**: To display profiles, POI author, etc.
 
-#### 3.1.4 Perfil de Usuario (`GET /users/{user_id}/profile`)
+#### 3.1.4 User Profile (`GET /users/{user_id}/profile`)
 
-- **Propósito**: Obtener perfil completo con estadísticas de contribuciones
-- **Información adicional**:
-  - Número de POIs creados
-  - Número de fotos subidas
-  - Número de valoraciones dadas
-  - Puntuaciones por categoría
+- **Purpose**: Obtain complete profile with contribution statistics
+- **Additional information**:
+  - Number of POIs created
+  - Number of photos uploaded
+  - Number of ratings given
+  - Scores by category
 
-#### 3.1.5 Ranking Global (`GET /users/ranking/global`)
+#### 3.1.5 Global Ranking (`GET /users/ranking/global`)
 
-- **Propósito**: Obtener ranking de usuarios ordenado por `total_score`
-- **Parámetros**:
-  - `limit`: Número máximo de usuarios (1-1000, default: 100)
-- **Uso**: Tabla de líderes para gamificación
+- **Purpose**: Obtain user ranking ordered by `total_score`
+- **Parameters**:
+  - `limit`: Maximum number of users (1-1000, default: 100)
+- **Usage**: Leaderboard for gamification
 
-### 3.2 Gestión de POIs (Puntos de Interés)
+### 3.2 POI Management (Points of Interest)
 
-#### 3.2.1 Crear POI (`POST /pois/`)
+#### 3.2.1 Create POI (`POST /pois/`)
 
-- **Propósito**: Crear un nuevo punto de interés
-- **Parámetros**:
-  - `name`: Nombre del POI
-  - `description`: Descripción
-  - `latitude`: Latitud (-90 a 90)
-  - `longitude`: Longitud (-180 a 180)
-  - `author_id`: ID del usuario creador
-  - `tags`: Etiquetas separadas por comas (opcional)
-  - `image`: Archivo de imagen (multipart/form-data)
-- **Proceso**:
-  1. Validar coordenadas geográficas
-  2. Subir imagen a S3 (carpeta `pois/`)
-  3. Obtener URL de la imagen
-  4. Crear POI en MongoDB
-  5. **Otorgar 20 puntos** al autor (gamificación)
-  6. Retornar POI creado
+- **Purpose**: Create a new point of interest
+- **Parameters**:
+  - `name`: POI name
+  - `description`: Description
+  - `latitude`: Latitude (-90 to 90)
+  - `longitude`: Longitude (-180 to 180)
+  - `author_id`: Creator user ID
+  - `tags`: Tags separated by commas (optional)
+  - `image`: Image file (multipart/form-data)
+- **Process**:
+  1. Validate geographic coordinates
+  2. Upload image to S3 (`pois/` folder)
+  3. Get image URL
+  4. Create POI in MongoDB
+  5. **Award 20 points** to the author (gamification)
+  6. Return created POI
 
-#### 3.2.2 Listar POIs (`GET /pois/`)
+#### 3.2.2 List POIs (`GET /pois/`)
 
-- **Propósito**: Obtener lista de POIs con paginación y filtrado
-- **Parámetros**:
-  - `skip`: Número de registros a saltar (paginación)
-  - `limit`: Máximo de registros (1-1000, default: 100)
-  - `tags`: Filtro por etiquetas (separadas por comas)
-- **Orden**: Por fecha de creación (más recientes primero)
+- **Purpose**: Obtain list of POIs with pagination and filtering
+- **Parameters**:
+  - `skip`: Number of records to skip (pagination)
+  - `limit`: Maximum records (1-1000, default: 100)
+  - `tags`: Filter by tags (comma-separated)
+- **Order**: By creation date (newest first)
 
-#### 3.2.3 Obtener POI (`GET /pois/{poi_id}`)
+#### 3.2.3 Get POI (`GET /pois/{poi_id}`)
 
-- **Propósito**: Obtener detalles completos de un POI
-- **Información adicional**:
-  - Nombre del autor
-  - Número de fotos asociadas
+- **Purpose**: Obtain complete details of a POI
+- **Additional information**:
+  - Author name
+  - Number of associated photos
 
-#### 3.2.4 Actualizar POI (`PUT /pois/{poi_id}`)
+#### 3.2.4 Update POI (`PUT /pois/{poi_id}`)
 
-- **Propósito**: Modificar información de un POI existente
-- **Campos actualizables**: name, description, tags, latitude, longitude
-- **Nota**: No se puede cambiar la imagen principal (requeriría nuevo endpoint)
+- **Purpose**: Modify information of an existing POI
+- **Updatable fields**: name, description, tags, latitude, longitude
+- **Note**: Main image cannot be changed (would require new endpoint)
 
-#### 3.2.5 Eliminar POI (`DELETE /pois/{poi_id}`)
+#### 3.2.5 Delete POI (`DELETE /pois/{poi_id}`)
 
-- **Propósito**: Eliminar un POI y sus recursos asociados
-- **Proceso**:
-  1. Eliminar todas las fotos asociadas (de BD y S3)
-  2. Eliminar imagen principal del POI (de S3)
-  3. Eliminar POI de la base de datos
-  4. **Nota**: Las valoraciones se mantienen (para estadísticas históricas)
+- **Purpose**: Delete a POI and its associated resources
+- **Process**:
+  1. Delete all associated photos (from DB and S3)
+  2. Delete main POI image (from S3)
+  3. Delete POI from database
+  4. **Note**: Ratings are maintained (for historical statistics)
 
-### 3.3 Gestión de Fotografías
+### 3.3 Photo Management
 
-#### 3.3.1 Subir Foto (`POST /photos/`)
+#### 3.3.1 Upload Photo (`POST /photos/`)
 
-- **Propósito**: Añadir una nueva fotografía a un POI existente
-- **Parámetros**:
-  - `poi_id`: ID del POI
-  - `author_id`: ID del usuario
-  - `description`: Descripción opcional
-  - `image`: Archivo de imagen
-- **Proceso**:
-  1. Verificar que el POI existe
-  2. Subir imagen a S3 (carpeta `photos/`)
-  3. Crear registro de foto en MongoDB
-  4. **Otorgar 5 puntos** al autor (gamificación)
-  5. Retornar foto creada
+- **Purpose**: Add a new photograph to an existing POI
+- **Parameters**:
+  - `poi_id`: POI ID
+  - `author_id`: User ID
+  - `description`: Optional description
+  - `image`: Image file
+- **Process**:
+  1. Verify POI exists
+  2. Upload image to S3 (`photos/` folder)
+  3. Create photo record in MongoDB
+  4. **Award 5 points** to the author (gamification)
+  5. Return created photo
 
-#### 3.3.2 Obtener Fotos de un POI (`GET /photos/poi/{poi_id}`)
+#### 3.3.2 Get Photos of a POI (`GET /photos/poi/{poi_id}`)
 
-- **Propósito**: Obtener todas las fotos asociadas a un POI
-- **Uso**: Mostrar galería de fotos en el frontend
+- **Purpose**: Obtain all photos associated with a POI
+- **Usage**: Display photo gallery in the frontend
 
-#### 3.3.3 Obtener Foto (`GET /photos/{photo_id}`)
+#### 3.3.3 Get Photo (`GET /photos/{photo_id}`)
 
-- **Propósito**: Obtener detalles de una foto específica
-- **Información**: Incluye estadísticas de valoración
+- **Purpose**: Obtain details of a specific photo
+- **Information**: Includes rating statistics
 
-#### 3.3.4 Eliminar Foto (`DELETE /photos/{photo_id}`)
+#### 3.3.4 Delete Photo (`DELETE /photos/{photo_id}`)
 
-- **Propósito**: Eliminar una foto
-- **Proceso**:
-  1. Eliminar archivo de S3
-  2. Eliminar registro de la base de datos
+- **Purpose**: Delete a photo
+- **Process**:
+  1. Delete file from S3
+  2. Delete record from database
 
-### 3.4 Sistema de Valoraciones
+### 3.4 Rating System
 
-#### 3.4.1 Crear Valoración (`POST /ratings/`)
+#### 3.4.1 Create Rating (`POST /ratings/`)
 
-- **Propósito**: Valorar un POI o una foto
-- **Validaciones**:
-  - Usuario no puede valorar sus propias contribuciones
-  - Usuario no puede valorar el mismo elemento dos veces
-  - Puntuación entre 0 y 10
-- **Proceso**:
-  1. Verificar que el elemento (POI/foto) existe
-  2. Verificar que el usuario no es el autor
-  3. Verificar que no existe valoración previa
-  4. Crear valoración
-  5. Recalcular `rating_count` y `average_rating` del elemento
-  6. **Otorgar 1 punto** al usuario que valora
-  7. **Verificar bonus**: Si `average_rating > 7`, otorgar 10 puntos adicionales al autor
+- **Purpose**: Rate a POI or a photo
+- **Validations**:
+  - User cannot rate their own contributions
+  - User cannot rate the same element twice
+  - Score between 0 and 10
+- **Process**:
+  1. Verify element (POI/photo) exists
+  2. Verify user is not the author
+  3. Verify no previous rating exists
+  4. Create rating
+  5. Recalculate `rating_count` and `average_rating` of the element
+  6. **Award 1 point** to the user who rates
+  7. **Check bonus**: If `average_rating > 7`, award 10 additional points to the author
 
-#### 3.4.2 Obtener Valoración (`GET /ratings/{rating_id}`)
+#### 3.4.2 Get Rating (`GET /ratings/{rating_id}`)
 
-- **Propósito**: Obtener información de una valoración específica
+- **Purpose**: Obtain information of a specific rating
 
-#### 3.4.3 Eliminar Valoración (`DELETE /ratings/{rating_id}`)
+#### 3.4.3 Delete Rating (`DELETE /ratings/{rating_id}`)
 
-- **Propósito**: Eliminar una valoración
-- **Proceso**:
-  1. Eliminar valoración
-  2. Recalcular estadísticas del elemento valorado
+- **Purpose**: Delete a rating
+- **Process**:
+  1. Delete rating
+  2. Recalculate statistics of the rated element
 
-### 3.5 Sistema de Gamificación
+### 3.5 Gamification System
 
-El servicio `GamificationService` gestiona la asignación de puntos:
+The `GamificationService` manages point assignment:
 
-- **Crear POI**: +20 puntos (`poi_score`)
-- **POI con rating > 7**: +10 puntos adicionales (`poi_score`)
-- **Subir foto**: +5 puntos (`photo_score`)
-- **Foto con rating > 7**: +10 puntos adicionales (`photo_score`)
-- **Dar valoración**: +1 punto (no se acumula en subtotales, solo en `total_score`)
+- **Create POI**: +20 points (`poi_score`)
+- **POI with rating > 7**: +10 additional points (`poi_score`)
+- **Upload photo**: +5 points (`photo_score`)
+- **Photo with rating > 7**: +10 additional points (`photo_score`)
+- **Give rating**: +1 point (not accumulated in subtotals, only in `total_score`)
 
-**Decisión de diseño**: Los puntos se actualizan de forma asíncrona después de cada acción, manteniendo consistencia en tiempo real.
+**Design decision**: Points are updated asynchronously after each action, maintaining real-time consistency.
 
 ---
 
-## 4. Descripción de la API Desarrollada
+## 4. Developed API Description
 
-### 4.1 Endpoints de la API
+### 4.1 API Endpoints
 
-#### **Base URL**: `http://localhost:8000` (desarrollo) o según despliegue
+#### **Base URL**: `http://localhost:8000` (development) or according to deployment
 
-#### 4.1.1 Endpoints de Usuarios (`/users`)
+#### 4.1.1 User Endpoints (`/users`)
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/users/` | Crear nuevo usuario | API Key |
-| POST | `/users/authenticate` | Autenticar usuario | API Key |
-| GET | `/users/{user_id}` | Obtener usuario | API Key |
-| GET | `/users/{user_id}/profile` | Obtener perfil completo | API Key |
-| GET | `/users/ranking/global` | Ranking de usuarios | API Key |
+| POST | `/users/` | Create new user | API Key |
+| POST | `/users/authenticate` | Authenticate user | API Key |
+| GET | `/users/{user_id}` | Get user | API Key |
+| GET | `/users/{user_id}/profile` | Get complete profile | API Key |
+| GET | `/users/ranking/global` | User ranking | API Key |
 
-#### 4.1.2 Endpoints de POIs (`/pois`)
+#### 4.1.2 POI Endpoints (`/pois`)
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/pois/` | Crear POI (con imagen) | API Key |
-| GET | `/pois/` | Listar POIs (con filtros) | API Key |
-| GET | `/pois/{poi_id}` | Obtener POI detallado | API Key |
-| PUT | `/pois/{poi_id}` | Actualizar POI | API Key |
-| DELETE | `/pois/{poi_id}` | Eliminar POI | API Key |
+| POST | `/pois/` | Create POI (with image) | API Key |
+| GET | `/pois/` | List POIs (with filters) | API Key |
+| GET | `/pois/{poi_id}` | Get detailed POI | API Key |
+| PUT | `/pois/{poi_id}` | Update POI | API Key |
+| DELETE | `/pois/{poi_id}` | Delete POI | API Key |
 
-#### 4.1.3 Endpoints de Fotos (`/photos`)
+#### 4.1.3 Photo Endpoints (`/photos`)
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/photos/` | Subir foto a un POI | API Key |
-| GET | `/photos/poi/{poi_id}` | Obtener fotos de un POI | API Key |
-| GET | `/photos/{photo_id}` | Obtener foto detallada | API Key |
-| DELETE | `/photos/{photo_id}` | Eliminar foto | API Key |
+| POST | `/photos/` | Upload photo to a POI | API Key |
+| GET | `/photos/poi/{poi_id}` | Get photos of a POI | API Key |
+| GET | `/photos/{photo_id}` | Get detailed photo | API Key |
+| DELETE | `/photos/{photo_id}` | Delete photo | API Key |
 
-#### 4.1.4 Endpoints de Valoraciones (`/ratings`)
+#### 4.1.4 Rating Endpoints (`/ratings`)
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| POST | `/ratings/` | Crear valoración | API Key |
-| GET | `/ratings/{rating_id}` | Obtener valoración | API Key |
-| DELETE | `/ratings/{rating_id}` | Eliminar valoración | API Key |
+| POST | `/ratings/` | Create rating | API Key |
+| GET | `/ratings/{rating_id}` | Get rating | API Key |
+| DELETE | `/ratings/{rating_id}` | Delete rating | API Key |
 
-#### 4.1.5 Endpoints Generales
+#### 4.1.5 General Endpoints
 
-| Método | Endpoint | Descripción | Autenticación |
+| Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|---------------|
-| GET | `/` | Información de la API | No |
+| GET | `/` | API information | No |
 | GET | `/health` | Health check | No |
-| GET | `/docs` | Documentación Swagger | No |
-| GET | `/redoc` | Documentación ReDoc | No |
+| GET | `/docs` | Swagger documentation | No |
+| GET | `/redoc` | ReDoc documentation | No |
 
-### 4.2 Autenticación
+### 4.2 Authentication
 
-Todos los endpoints (excepto `/`, `/health`, `/docs`, `/redoc`) requieren autenticación mediante **API Key**.
+All endpoints (except `/`, `/health`, `/docs`, `/redoc`) require authentication via **API Key**.
 
-**Header requerido**:
+**Required header**:
 
 ```
 X-API-Key: your-api-key-here
 ```
 
-**Configuración**: La API Key se define en la variable de entorno `API_KEY`.
+**Configuration**: The API Key is defined in the `API_KEY` environment variable.
 
-### 4.3 Documentación Interactiva
+### 4.3 Interactive Documentation
 
-FastAPI genera automáticamente documentación interactiva:
+FastAPI automatically generates interactive documentation:
 
 - **Swagger UI**: `http://localhost:8000/docs`
 - **ReDoc**: `http://localhost:8000/redoc`
 - **OpenAPI Schema**: `http://localhost:8000/openapi.json`
 
-### 4.4 URLs de APIs Externas Utilizadas
+### 4.4 External API URLs Used
 
 #### 4.4.1 MongoDB Atlas
 
-- **URL de conexión**: Configurada mediante variable de entorno `MONGODB_URI`
-- **Formato**: `mongodb+srv://username:password@cluster.mongodb.net/dbname?retryWrites=true&w=majority`
-- **Documentación**: <https://www.mongodb.com/docs/atlas/>
+- **Connection URL**: Configured via `MONGODB_URI` environment variable
+- **Format**: `mongodb+srv://username:password@cluster.mongodb.net/dbname?retryWrites=true&w=majority`
+- **Documentation**: <https://www.mongodb.com/docs/atlas/>
 
 #### 4.4.2 AWS S3
 
-- **Endpoint de almacenamiento**: `https://{bucket-name}.s3.{region}.amazonaws.com/{key}`
-- **Región configurable**: Por defecto `us-east-1`
-- **Documentación**: <https://docs.aws.amazon.com/s3/>
+- **Storage endpoint**: `https://{bucket-name}.s3.{region}.amazonaws.com/{key}`
+- **Configurable region**: Default `us-east-1`
+- **Documentation**: <https://docs.aws.amazon.com/s3/>
 
-**Nota**: No se utilizan APIs REST externas adicionales. El sistema es autocontenido excepto por los servicios de almacenamiento.
+**Note**: No additional external REST APIs are used. The system is self-contained except for storage services.
 
 ---
 
-## 5. Instrucciones de Instalación y Despliegue
+## 5. Installation and Deployment Instructions
 
-### 5.1 Requisitos Previos
+### 5.1 Prerequisites
 
-- **Docker** y **Docker Compose** instalados
-- Cuenta en **MongoDB Atlas** (gratuita disponible)
-- Cuenta en **AWS** con acceso a S3 (o servicio de almacenamiento compatible)
-- Variables de entorno configuradas
+- **Docker** and **Docker Compose** installed
+- Account on **MongoDB Atlas** (free tier available)
+- Account on **AWS** with S3 access (or compatible storage service)
+- Environment variables configured
 
-### 5.2 Configuración de MongoDB Atlas
+### 5.2 MongoDB Atlas Configuration
 
-1. Crear cuenta en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-2. Crear un cluster (nivel gratuito disponible)
-3. Crear un usuario de base de datos
-4. Configurar IP whitelist (0.0.0.0/0 para desarrollo, IP específica para producción)
-5. Obtener la connection string:
+The MongoDB Atlas configuration process involves:
+
+1. Creating an account on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Creating a cluster (free tier available)
+3. Creating a database user
+4. Configuring IP whitelist (0.0.0.0/0 for development, specific IP for production)
+5. Obtaining the connection string:
 
    ```
    mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<dbname>?retryWrites=true&w=majority
    ```
 
-### 5.3 Configuración de AWS S3
+### 5.3 AWS S3 Configuration
 
-1. Crear cuenta en AWS (si no se tiene)
-2. Crear un bucket S3:
-   - Nombre único globalmente
-   - Región preferida (ej: `us-east-1`)
-   - Configurar permisos de acceso público si se requiere
-3. Crear usuario IAM con permisos S3:
-   - Política: `AmazonS3FullAccess` (o permisos más restrictivos)
-   - Obtener Access Key ID y Secret Access Key
+The AWS S3 configuration process involves:
 
-### 5.4 Configuración Local
+1. Creating an AWS account (if not available)
+2. Creating an S3 bucket:
+   - Globally unique name
+   - Preferred region (e.g., `us-east-1`)
+   - Configure public access permissions if required
+3. Creating an IAM user with S3 permissions:
+   - Policy: `AmazonS3FullAccess` (or more restrictive permissions)
+   - Obtain Access Key ID and Secret Access Key
 
-1. **Clonar o descargar el proyecto**
+### 5.4 Local Configuration
 
-2. **Crear archivo `.env` en la raíz del proyecto**:
+1. **Clone or download the project**
+
+2. **Create `.env` file in the project root**:
 
    ```env
    # App Configuration
    LOG_LEVEL=INFO
-   SECRET_KEY=tu-clave-secreta-muy-segura-aqui
-   API_KEY=tu-api-key-para-autenticacion
+   SECRET_KEY=your-very-secure-secret-key-here
+   API_KEY=your-api-key-for-authentication
 
    # MongoDB Atlas Configuration
-   MONGODB_URI=mongodb+srv://usuario:password@cluster.mongodb.net/urbanspot?retryWrites=true&w=majority
+   MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/urbanspot?retryWrites=true&w=majority
    MONGODB_DATABASE=urbanspot
 
    # AWS S3 Configuration
-   AWS_ACCESS_KEY_ID=tu-access-key-id
-   AWS_SECRET_ACCESS_KEY=tu-secret-access-key
+   AWS_ACCESS_KEY_ID=your-access-key-id
+   AWS_SECRET_ACCESS_KEY=your-secret-access-key
    AWS_REGION=us-east-1
-   S3_BUCKET_NAME=nombre-de-tu-bucket
+   S3_BUCKET_NAME=your-bucket-name
    ```
 
-3. **Construir y ejecutar con Docker Compose**:
+3. **Build and run with Docker Compose**:
 
    ```bash
-   # Construir la imagen
+   # Build the image
    docker-compose build
 
-   # Iniciar el contenedor
+   # Start the container
    docker-compose up -d
 
-   # Ver logs
+   # View logs
    docker-compose logs -f backend
    ```
 
-4. **Verificar que funciona**:
+4. **Verify it works**:
    - API: <http://localhost:8000>
    - Health check: <http://localhost:8000/health>
-   - Documentación: <http://localhost:8000/docs>
-
-### 5.5 Despliegue en Producción
-
-#### Opción 1: Docker en Servidor
-
-1. **Configurar servidor** (VPS, EC2, etc.):
-   - Instalar Docker y Docker Compose
-   - Configurar firewall (puerto 8000 o el que se use)
-
-2. **Subir código al servidor**:
-
-   ```bash
-   git clone <repo-url>
-   cd practica
-   ```
-
-3. **Configurar `.env` con credenciales de producción**
-
-4. **Iniciar con política de reinicio**:
-
-   ```bash
-   RESTART_POLICY=always docker-compose up -d
-   ```
-
-5. **Configurar reverse proxy** (Nginx, Traefik) para:
-   - SSL/TLS (HTTPS)
-   - Dominio personalizado
-   - Rate limiting
-
-#### Opción 2: Plataformas PaaS
-
-##### **Heroku**
-
-1. Instalar Heroku CLI
-2. Crear aplicación: `heroku create urbanspot-api`
-3. Configurar variables de entorno: `heroku config:set KEY=value`
-4. Desplegar: `git push heroku main`
-
-##### **Fly.io**
-
-1. Instalar Fly CLI
-2. Inicializar: `fly launch`
-3. Configurar secrets: `fly secrets set KEY=value`
-4. Desplegar: `fly deploy`
-
-##### **Railway**
-
-1. Conectar repositorio en Railway
-2. Configurar variables de entorno en el dashboard
-3. Desplegar automáticamente desde Git
-
-### 5.6 Verificación Post-Despliegue
-
-1. **Health check**: `GET /health` debe retornar `{"status": "healthy"}`
-2. **Crear usuario de prueba**: `POST /users/`
-3. **Autenticar**: `POST /users/authenticate`
-4. **Verificar documentación**: `/docs` debe cargar correctamente
+   - Documentation: <http://localhost:8000/docs>
 
 ---
 
-## 6. Limitaciones de la Solución y Mejoras Futuras
+## 6. Solution Limitations and Future Improvements
 
-### 6.1 Limitaciones Actuales
+### 6.1 Current Limitations
 
-#### 6.1.1 Autenticación
+#### 6.1.1 Authentication
 
-- **Limitación**: Sistema de autenticación basado únicamente en API Key
-- **Impacto**: No hay gestión de sesiones, tokens JWT, o OAuth 2.0 completo
-- **Riesgo**: Si la API Key se compromete, todo el acceso está en riesgo
+- **Limitation**: Authentication system based solely on API Key
+- **Impact**: No session management, JWT tokens, or complete OAuth 2.0
+- **Risk**: If the API Key is compromised, all access is at risk
 
-#### 6.1.2 Validación de Archivos
+#### 6.1.2 File Validation
 
-- **Limitación**: No se valida el tipo MIME real de las imágenes, solo el header
-- **Impacto**: Posible subida de archivos maliciosos disfrazados como imágenes
-- **Riesgo**: Seguridad y almacenamiento innecesario
+- **Limitation**: Real MIME type of images is not validated, only the header
+- **Impact**: Possible upload of malicious files disguised as images
+- **Risk**: Security and unnecessary storage
 
-#### 6.1.3 Tamaño de Archivos
+#### 6.1.3 File Size
 
-- **Limitación**: No hay límite explícito de tamaño de archivo
-- **Impacto**: Posible consumo excesivo de almacenamiento S3
-- **Riesgo**: Costos elevados y problemas de rendimiento
+- **Limitation**: No explicit file size limit
+- **Impact**: Possible excessive S3 storage consumption
+- **Risk**: High costs and performance issues
 
-#### 6.1.4 Búsqueda Geográfica
+#### 6.1.4 Geographic Search
 
-- **Limitación**: No hay búsqueda por proximidad geográfica
-- **Impacto**: No se pueden encontrar POIs cercanos a una ubicación
-- **Riesgo**: Funcionalidad limitada para aplicación móvil
+- **Limitation**: No proximity-based geographic search
+- **Impact**: Cannot find POIs near a location
+- **Risk**: Limited functionality for mobile application
 
-#### 6.1.5 Paginación
+#### 6.1.5 Pagination
 
-- **Limitación**: Paginación básica con `skip` y `limit`
-- **Impacto**: Ineficiente para grandes volúmenes de datos
-- **Riesgo**: Rendimiento degradado con muchos registros
+- **Limitation**: Basic pagination with `skip` and `limit`
+- **Impact**: Inefficient for large data volumes
+- **Risk**: Degraded performance with many records
 
-#### 6.1.6 Caché
+#### 6.1.6 Cache
 
-- **Limitación**: No hay sistema de caché implementado
-- **Impacto**: Todas las consultas van directamente a MongoDB
-- **Riesgo**: Latencia y costos de MongoDB Atlas
+- **Limitation**: No caching system implemented
+- **Impact**: All queries go directly to MongoDB
+- **Risk**: Latency and MongoDB Atlas costs
 
 #### 6.1.7 Rate Limiting
 
-- **Limitación**: No hay límite de peticiones por usuario/IP
-- **Impacto**: Vulnerable a ataques de fuerza bruta o abuso
-- **Riesgo**: Seguridad y disponibilidad del servicio
+- **Limitation**: No request limit per user/IP
+- **Impact**: Vulnerable to brute force attacks or abuse
+- **Risk**: Security and service availability
 
-#### 6.1.8 Logging y Monitoreo
+### 6.2 Future Improvements
 
-- **Limitación**: Logging básico, sin sistema de monitoreo
-- **Impacto**: Difícil detectar problemas en producción
-- **Riesgo**: Tiempo de respuesta lento ante incidentes
+#### 6.2.1 Authentication and Authorization
 
-#### 6.1.9 Eliminación de Archivos
+- [ ] Implement **complete OAuth 2.0** (Google, GitHub, etc.)
+- [ ] Implement **JWT tokens** for sessions
+- [ ] **Refresh token** system
 
-- **Limitación**: Al eliminar POIs/fotos, no se verifica que el archivo en S3 se eliminó correctamente
-- **Impacto**: Posible acumulación de archivos huérfanos en S3
-- **Riesgo**: Costos de almacenamiento innecesarios
+#### 6.2.2 Validation and Security
 
-#### 6.1.10 Transacciones
+- [ ] Real MIME type validation of files (magic bytes)
+- [ ] File size limit (e.g., 10MB per image)
+- [ ] **Image sanitization** (resize, compress)
+- [ ] **Rate limiting** per user/IP
+- [ ] **HTTPS** mandatory in production
 
-- **Limitación**: No hay transacciones para operaciones complejas
-- **Impacto**: Posible inconsistencia si falla una operación parcial
-- **Riesgo**: Integridad de datos comprometida
+#### 6.2.3 Search Features
 
-### 6.2 Mejoras Futuras
+- [ ] **Geographic search** by proximity (MongoDB 2dsphere indexes)
+- [ ] **Full-text search** in names and descriptions
+- [ ] **Advanced filters** (date range, rating range, etc.)
+- [ ] **Cursor-based pagination** instead of skip/limit
 
-#### 6.2.1 Autenticación y Autorización
+#### 6.2.4 Performance and Scalability
 
-- [ ] Implementar **OAuth 2.0 completo** (Google, GitHub, etc.)
-- [ ] Implementar **JWT tokens** para sesiones
-- [ ] Sistema de **refresh tokens**
-- [ ] **Autorización basada en roles** (RBAC)
-- [ ] **2FA** (autenticación de dos factores)
+- [ ] **Caching system** (Redis) for frequent queries
+- [ ] **CDN** to serve images from S3
+- [ ] **Optimized indexes** in MongoDB
+- [ ] **Optimized connection pooling**
+- [ ] **Response compression** (gzip)
 
-#### 6.2.2 Validación y Seguridad
+#### 6.2.5 Monitoring and Observability
 
-- [ ] Validación de tipo MIME real de archivos (magic bytes)
-- [ ] Límite de tamaño de archivo (ej: 10MB por imagen)
-- [ ] **Sanitización de imágenes** (redimensionar, comprimir)
-- [ ] **Rate limiting** por usuario/IP
-- [ ] **CORS** configurado específicamente (no `*`)
-- [ ] **HTTPS** obligatorio en producción
+- [ ] **Structured logging** (JSON logs)
+- [ ] **Metrics** (Prometheus, Grafana)
+- [ ] **Distributed tracing** (OpenTelemetry)
+- [ ] **Alerts** for errors and high latency
+- [ ] **Advanced health checks** (verify DB, S3, etc.)
 
-#### 6.2.3 Funcionalidades de Búsqueda
+#### 6.2.6 Additional Features
 
-- [ ] **Búsqueda geográfica** por proximidad (índices 2dsphere de MongoDB)
-- [ ] **Búsqueda full-text** en nombres y descripciones
-- [ ] **Filtros avanzados** (rango de fechas, rango de ratings, etc.)
-- [ ] **Paginación con cursor** en lugar de skip/limit
+- [ ] **Notifications** when a POI/photo receives a rating
+- [ ] **Reporting system** for inappropriate content
+- [ ] **Content moderation** (admin can delete/edit)
+- [ ] **Change history** (audit)
+- [ ] **Data export** (JSON, CSV)
+- [ ] **Statistics API** (most rated POIs, most active users, etc.)
 
-#### 6.2.4 Rendimiento y Escalabilidad
+#### 6.2.7 Architecture
 
-- [ ] **Sistema de caché** (Redis) para consultas frecuentes
-- [ ] **CDN** para servir imágenes desde S3
-- [ ] **Índices optimizados** en MongoDB
-- [ ] **Conexión pooling** optimizado
-- [ ] **Compresión de respuestas** (gzip)
-
-#### 6.2.5 Monitoreo y Observabilidad
-
-- [ ] **Logging estructurado** (JSON logs)
-- [ ] **Métricas** (Prometheus, Grafana)
-- [ ] **Tracing distribuido** (OpenTelemetry)
-- [ ] **Alertas** para errores y latencia alta
-- [ ] **Health checks avanzados** (verificar BD, S3, etc.)
-
-#### 6.2.6 Funcionalidades Adicionales
-
-- [ ] **Notificaciones** cuando un POI/foto recibe valoración
-- [ ] **Sistema de reportes** para contenido inapropiado
-- [ ] **Moderación de contenido** (admin puede eliminar/editar)
-- [ ] **Historial de cambios** (auditoría)
-- [ ] **Exportación de datos** (JSON, CSV)
-- [ ] **API de estadísticas** (POIs más valorados, usuarios más activos, etc.)
-
-#### 6.2.7 Arquitectura
-
-- [ ] **Cola de trabajos** (Celery, RQ) para tareas asíncronas
-- [ ] **WebSockets** para actualizaciones en tiempo real
-- [ ] **Microservicios** si el sistema crece (separar gamificación, notificaciones, etc.)
-- [ ] **Event sourcing** para auditoría completa
+- [ ] **Job queue** (Celery, RQ) for asynchronous tasks
+- [ ] **WebSockets** for real-time updates
+- [ ] **Microservices** if the system grows (separate gamification, notifications, etc.)
+- [ ] **Event sourcing** for complete audit
 
 #### 6.2.8 Testing
 
-- [ ] **Tests unitarios** para servicios
-- [ ] **Tests de integración** para endpoints
-- [ ] **Tests E2E** para flujos completos
-- [ ] **Cobertura de código** > 80%
-
-#### 6.2.9 DevOps
-
-- [ ] **CI/CD pipeline** (GitHub Actions, GitLab CI)
-- [ ] **Docker multi-stage** optimizado (ya implementado parcialmente)
-- [ ] **Kubernetes** para orquestación en producción
-- [ ] **Backups automáticos** de MongoDB
-- [ ] **Versionado de API** (`/v1/`, `/v2/`)
+- [ ] **Unit tests** for services
+- [ ] **Integration tests** for endpoints
+- [ ] **E2E tests** for complete flows
+- [ ] **Code coverage** > 80%
 
 ---
 
-## 7. Conclusiones
+## 7. Conclusions
 
-El backend de UrbanSpot ha sido desarrollado siguiendo **principios de diseño sólidos**, especialmente mediante el uso de **protocolos (interfaces)** que permiten cambiar las implementaciones de base de datos y almacenamiento sin afectar la lógica de negocio. Esta arquitectura facilita:
+The UrbanSpot backend has been developed following **solid design principles**, especially through the use of **protocols (interfaces)** that allow changing database and storage implementations without affecting business logic. This architecture facilitates:
 
-- **Mantenibilidad**: Código organizado en capas claras
-- **Escalabilidad**: Fácil migrar a otros servicios cloud
-- **Testabilidad**: Interfaces permiten mocks sencillos
-- **Extensibilidad**: Nuevas funcionalidades se integran fácilmente
+- **Maintainability**: Code organized in clear layers
+- **Scalability**: Easy to migrate to other cloud services
+- **Testability**: Interfaces allow simple mocks
+- **Extensibility**: New features integrate easily
 
-La solución actual cubre todos los requisitos básicos del caso de estudio, con un sistema de gamificación funcional, gestión completa de POIs, fotos y valoraciones, y una API REST bien documentada. Las mejoras futuras propuestas permitirían llevar el sistema a un nivel de producción empresarial.
-
----
-
-**Autor**: [Tu Nombre]  
-**Fecha**: [Fecha Actual]  
-**Versión**: 1.0.0
+The current solution covers all basic requirements of the case study, with a functional gamification system, complete management of POIs, photos and ratings, and a well-documented REST API. The proposed future improvements would allow taking the system to an enterprise production level.
