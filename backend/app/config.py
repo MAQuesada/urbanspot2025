@@ -16,9 +16,15 @@ class AppConfig(BaseSettings):
     SECRET_KEY: str = ""
     API_KEY: str = ""  # API Key for authentication
     
+    # Database settings
+    DATABASE_TYPE: str = "mongodb"  # Options: "mongodb" or "dynamodb"
+    
     # MongoDB Atlas settings
     MONGODB_URI: str = ""
     MONGODB_DATABASE: str = "urbanspot"
+    
+    # DynamoDB settings
+    DYNAMODB_TABLE_PREFIX: str = "urbanspot"
     
     # AWS S3 settings
     AWS_ACCESS_KEY_ID: str = ""
