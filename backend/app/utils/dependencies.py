@@ -1,5 +1,6 @@
 from app.config import config
 from app.utils.dynamodb_storage import DynamoDBDataDB
+from app.utils.imgbb_storage import ImgBBFileDB
 from app.utils.mongodb_storage import MongoDBDataDB
 from app.utils.s3_storage import S3FileDB
 from app.utils.storage import Storage
@@ -12,7 +13,13 @@ def get_storage() -> Storage:
     """Get or create the global Storage instance"""
     global _storage
     if _storage is None:
-        file_db = S3FileDB()
+        # Select file storage implementation based on environment variable
+        file_storage_type = config.FILE_STORAGE_TYPE.lower()
+        if file_storage_type == "imgbb":
+            file_db = ImgBBFileDB()
+        else:
+            # Default to S3
+            file_db = S3FileDB()
 
         # Select database implementation based on environment variable
         database_type = config.DATABASE_TYPE.lower()

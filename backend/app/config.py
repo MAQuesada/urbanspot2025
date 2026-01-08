@@ -26,11 +26,17 @@ class AppConfig(BaseSettings):
     # DynamoDB settings
     DYNAMODB_TABLE_PREFIX: str = "urbanspot"
     
+    # File storage settings
+    FILE_STORAGE_TYPE: str = "imgbb"  # Options: "s3" or "imgbb"
+    
     # AWS S3 settings
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "us-east-1"
     S3_BUCKET_NAME: str = ""
+    
+    # ImgBB settings
+    IMGBB_API_KEY: str = ""
     
     # OAuth settings (for future frontend integration)
     GOOGLE_CLIENT_ID: str = ""

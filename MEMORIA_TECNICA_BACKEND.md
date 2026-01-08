@@ -25,9 +25,17 @@
 
 - **Motor 3.3+**: Official asynchronous MongoDB driver for Python, enabling non-blocking operations.
 
+- **aiohttp 3.9+**: Asynchronous HTTP client/server library for making API calls to ImgBB.
+
 - **AWS S3**: Object storage service for photographs and multimedia files.
   
   **Technical decision**: S3 was selected for its high availability, automatic scalability, and reduced costs for static file storage. Integration through `boto3` enables efficient file management.
+
+- **ImgBB API**: Alternative image hosting service via REST API.
+  
+  **Technical decision**: ImgBB was added as an alternative to S3 because it is **extremely easy to use** for image hosting. It requires minimal configuration (just an API key), no AWS account setup, and provides automatic image optimization and CDN. This makes it ideal for development, testing, and quick prototyping. The implementation uses `aiohttp` for asynchronous HTTP requests, maintaining consistency with the async architecture of the application.
+  
+  **Important limitation**: As a **free solution**, ImgBB does not provide a programmatic API endpoint for deleting images. Once uploaded, images remain on ImgBB servers until manually deleted through the web interface. This is a significant trade-off compared to AWS S3, which offers full CRUD operations (including deletion) but requires a paid AWS account. For production environments where image deletion is required, AWS S3 is the recommended choice despite the associated costs.
 
 ### 1.3 Security and Authentication
 
@@ -50,7 +58,7 @@
 - **Docker Compose**: Service orchestration and environment variable management.
 - **UV**: Modern and fast Python package manager, used in the Dockerfile build process.
 
-### 1.6 External Cloud Services
+### 1.6 External  Services
 
 - **MongoDB Atlas**: Managed cloud database
   - URL: `https://www.mongodb.com/cloud/atlas`
@@ -59,6 +67,12 @@
 - **AWS S3**: Object storage
   - URL: `https://aws.amazon.com/s3/`
   - Configurable region (default: `us-east-1`)
+
+- **ImgBB API**: Image hosting service
+  - URL: `https://api.imgbb.com/`
+  - Simple REST API for image uploads
+  - Free tier available
+  - Automatic CDN and image optimization
 
 ---
 
@@ -86,10 +100,10 @@ The application follows a **layered architecture** with clear separation of resp
                │
     ┌──────────┴──────────┐
     │                     │
-┌───▼──────┐      ┌───────▼───────┐
-│ MongoDB  │      │   AWS S3      │
-│  Atlas   │      │  (Storage)    │
-└──────────┘      └───────────────┘
+┌───▼──────┐      ┌───────▼───────────┐
+│ MongoDB  │      │                   │
+│ DynamoDB │      │  S3 or ImgBB      │
+└──────────┘      └───────────────────┘
 ```
 
 ### 2.2 Design Pattern: Protocols (Interfaces)
@@ -132,13 +146,32 @@ class FileDB(ABC):
     async def get_file_url(file_path) -> str
 ```
 
-**Current implementation**: `S3FileDB` (`app/utils/s3_storage.py`)
+**Current implementations**: 
+- `S3FileDB` (`app/utils/s3_storage.py`) - AWS S3 implementation
+- `ImgBBFileDB` (`app/utils/imgbb_storage.py`) - ImgBB API implementation
 
 **Benefits**:
 
-- **Flexibility**: Can switch to Google Cloud Storage, Azure Blob Storage, or local storage without touching business logic
+- **Flexibility**: Can switch between S3, ImgBB, Google Cloud Storage, Azure Blob Storage, or local storage without touching business logic
 - **Consistency**: Same interface regardless of provider
-- **Scalability**: Easy to migrate to another service if S3 does not meet requirements
+- **Scalability**: Easy to migrate to another service if current implementation does not meet requirements
+- **Ease of use**: ImgBB provides an extremely simple API for image hosting, requiring only an API key and no complex AWS infrastructure setup. This makes it ideal for development, testing, and quick prototyping scenarios where simplicity is prioritized over enterprise features.
+
+**Important trade-off between implementations**:
+
+- **ImgBB (Free solution)**: 
+  - ✅ Free tier available
+  - ✅ Extremely easy setup (just an API key)
+  - ✅ Automatic CDN and image optimization
+  - ❌ **Cannot delete images programmatically** - Images must be deleted manually through the web interface
+  - ❌ No full CRUD operations via API
+
+- **AWS S3 (Paid solution)**:
+  - ✅ Full CRUD operations including programmatic deletion
+  - ✅ Enterprise-grade reliability and scalability
+  - ✅ Fine-grained access control and security
+  - ❌ Requires AWS account and billing setup
+  - ❌ More complex initial configuration (IAM, buckets, permissions)
 
 #### 2.2.3 `Storage` Class
 
@@ -283,7 +316,9 @@ backend/
 │       ├── protocols.py     # DataDB and FileDB protocols
 │       ├── storage.py       # Storage class
 │       ├── mongodb_storage.py
+│       ├── dynamodb_storage.py
 │       ├── s3_storage.py
+│       ├── imgbb_storage.py
 │       ├── dependencies.py
 │       ├── auth.py
 │       └── security.py
@@ -556,7 +591,15 @@ FastAPI automatically generates interactive documentation:
 - **Configurable region**: Default `us-east-1`
 - **Documentation**: <https://docs.aws.amazon.com/s3/>
 
-**Note**: No additional external REST APIs are used. The system is self-contained except for storage services.
+#### 4.4.3 ImgBB API
+
+- **Upload endpoint**: `https://api.imgbb.com/1/upload`
+- **Method**: POST with multipart/form-data
+- **Parameters**: `key` (API key), `image` (file)
+- **Response**: JSON with `data.url` containing the image URL
+- **Documentation**: <https://api.imgbb.com/>
+
+**Note**: The system uses external storage services (S3 or ImgBB) for file storage and database services (MongoDB Atlas or DynamoDB) for data persistence. All other functionality is self-contained.
 
 ---
 
@@ -583,7 +626,11 @@ The MongoDB Atlas configuration process involves:
    mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<dbname>?retryWrites=true&w=majority
    ```
 
-### 5.3 AWS S3 Configuration
+### 5.3 File Storage Configuration
+
+The application supports two file storage options:
+
+#### 5.3.1 AWS S3 Configuration (Default)
 
 The AWS S3 configuration process involves:
 
@@ -595,6 +642,38 @@ The AWS S3 configuration process involves:
 3. Creating an IAM user with S3 permissions:
    - Policy: `AmazonS3FullAccess` (or more restrictive permissions)
    - Obtain Access Key ID and Secret Access Key
+4. Set `FILE_STORAGE_TYPE=s3` in your `.env` file
+
+#### 5.3.2 ImgBB Configuration (Alternative)
+
+ImgBB is an **extremely easy-to-use** image hosting service that requires minimal setup:
+
+1. Visit [https://api.imgbb.com/](https://api.imgbb.com/)
+2. Sign up for a free account
+3. Obtain your API key from the dashboard
+4. Set the following in your `.env` file:
+   - `FILE_STORAGE_TYPE=imgbb`
+   - `IMGBB_API_KEY=your-api-key-here`
+
+**Advantages of ImgBB:**
+- **Simplicity**: No AWS account or complex infrastructure setup required
+- **Easy API**: Simple REST API - just upload and get a URL
+- **Free tier**: Available for development and testing
+- **Automatic features**: CDN included, automatic image optimization
+- **Quick setup**: Can be configured in minutes
+
+
+** Important Limitation - Image Deletion:**
+
+As a **free solution**, ImgBB has a significant limitation: **it does not support programmatic deletion of images via API**. Once an image is uploaded to ImgBB, it cannot be deleted programmatically from the application. Images remain on ImgBB servers until manually deleted through the web interface.
+
+**Comparison with AWS S3:**
+- **ImgBB (Free)**: Free, easy setup | **Cannot delete images programmatically**
+- **AWS S3 (Paid)**: Full CRUD including deletion |  Requires AWS account and costs
+
+**Recommendation**: 
+- Use **ImgBB** for development, testing, and prototypes where image deletion is not critical
+- Use **AWS S3** for production environments where full CRUD operations (including deletion) are required, accepting the associated costs
 
 ### 5.4 Local Configuration
 
@@ -608,15 +687,30 @@ The AWS S3 configuration process involves:
    SECRET_KEY=your-very-secure-secret-key-here
    API_KEY=your-api-key-for-authentication
 
-   # MongoDB Atlas Configuration
+   # Database Configuration
+   DATABASE_TYPE=mongodb  # Options: "mongodb" or "dynamodb"
+
+   # MongoDB Atlas Configuration (if DATABASE_TYPE=mongodb)
    MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/urbanspot?retryWrites=true&w=majority
    MONGODB_DATABASE=urbanspot
 
-   # AWS S3 Configuration
+   # DynamoDB Configuration (if DATABASE_TYPE=dynamodb)
+   DYNAMODB_TABLE_PREFIX=urbanspot
+   AWS_REGION=us-east-1
+   AWS_ACCESS_KEY_ID=your-access-key-id
+   AWS_SECRET_ACCESS_KEY=your-secret-access-key
+
+   # File Storage Configuration
+   FILE_STORAGE_TYPE=s3  # Options: "s3" or "imgbb"
+
+   # AWS S3 Configuration (if FILE_STORAGE_TYPE=s3)
    AWS_ACCESS_KEY_ID=your-access-key-id
    AWS_SECRET_ACCESS_KEY=your-secret-access-key
    AWS_REGION=us-east-1
    S3_BUCKET_NAME=your-bucket-name
+
+   # ImgBB Configuration (if FILE_STORAGE_TYPE=imgbb)
+   IMGBB_API_KEY=your-imgbb-api-key
    ```
 
 3. **Build and run with Docker Compose**:
@@ -658,7 +752,7 @@ The AWS S3 configuration process involves:
 #### 6.1.3 File Size
 
 - **Limitation**: No explicit file size limit
-- **Impact**: Possible excessive S3 storage consumption
+- **Impact**: Possible excessive storage consumption (S3 or ImgBB)
 - **Risk**: High costs and performance issues
 
 #### 6.1.4 Geographic Search
@@ -667,19 +761,19 @@ The AWS S3 configuration process involves:
 - **Impact**: Cannot find POIs near a location
 - **Risk**: Limited functionality for mobile application
 
-#### 6.1.5 Pagination
+#### 6.1.6 Pagination
 
 - **Limitation**: Basic pagination with `skip` and `limit`
 - **Impact**: Inefficient for large data volumes
 - **Risk**: Degraded performance with many records
 
-#### 6.1.6 Cache
+#### 6.1.7 Cache
 
 - **Limitation**: No caching system implemented
 - **Impact**: All queries go directly to MongoDB
 - **Risk**: Latency and MongoDB Atlas costs
 
-#### 6.1.7 Rate Limiting
+#### 6.1.8 Rate Limiting
 
 - **Limitation**: No request limit per user/IP
 - **Impact**: Vulnerable to brute force attacks or abuse

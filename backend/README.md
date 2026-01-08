@@ -8,6 +8,7 @@ Backend API for UrbanSpot - Collaborative urban POI (Points of Interest) discove
 - **Pydantic**: Data validation and configuration
 - **Motor**: Async driver for MongoDB
 - **Boto3**: AWS SDK for S3
+- **aiohttp**: Async HTTP client for ImgBB API
 - **bcrypt**: Password hashing library
 - **UV**: Dependency and virtual environment manager
 
@@ -38,7 +39,9 @@ backend/
 │   └── utils/                  # Utilities
 │       ├── protocols.py         # FileDB and DataDB protocols
 │       ├── s3_storage.py        # S3 implementation
+│       ├── imgbb_storage.py     # ImgBB implementation
 │       ├── mongodb_storage.py   # MongoDB implementation
+│       ├── dynamodb_storage.py  # DynamoDB implementation
 │       ├── storage.py           # Storage class
 │       ├── dependencies.py      # FastAPI dependencies
 │       ├── auth.py              # API Key authentication
@@ -83,8 +86,8 @@ backend/
    ```
    
    Edit the `.env` file with your credentials:
-   - MongoDB Atlas URI
-   - AWS S3 credentials
+   - MongoDB Atlas URI (or DynamoDB configuration)
+   - File storage configuration (S3 or ImgBB)
    - API Key for authentication
 
 ## Configuration
@@ -99,15 +102,30 @@ LOG_LEVEL=INFO
 SECRET_KEY=your-secret-key-here
 API_KEY=your-api-key-here
 
-# MongoDB Atlas Configuration
+# Database Configuration
+DATABASE_TYPE=mongodb  # Options: "mongodb" or "dynamodb"
+
+# MongoDB Atlas Configuration (if DATABASE_TYPE=mongodb)
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname?retryWrites=true&w=majority
 MONGODB_DATABASE=urbanspot
 
-# AWS S3 Configuration
+# DynamoDB Configuration (if DATABASE_TYPE=dynamodb)
+DYNAMODB_TABLE_PREFIX=urbanspot
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+
+# File Storage Configuration
+FILE_STORAGE_TYPE=s3  # Options: "s3" or "imgbb"
+
+# AWS S3 Configuration (if FILE_STORAGE_TYPE=s3)
 AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=your-s3-bucket-name
+
+# ImgBB Configuration (if FILE_STORAGE_TYPE=imgbb)
+IMGBB_API_KEY=your-imgbb-api-key
 ```
 
 ## Running the Application
@@ -233,14 +251,20 @@ Points are automatically calculated and updated in the user's profile. The syste
 
 The system uses protocols (ABC) to abstract storage operations:
 
-- **FileDB**: Protocol for file storage operations (implemented with S3)
-- **DataDB**: Protocol for database operations (implemented with MongoDB)
+- **FileDB**: Protocol for file storage operations
+  - **S3 Implementation**: AWS S3 for production-grade file storage
+  - **ImgBB Implementation**: ImgBB API for easy image hosting (simpler setup, no AWS account needed)
+- **DataDB**: Protocol for database operations
+  - **MongoDB Implementation**: MongoDB Atlas for flexible document storage
+  - **DynamoDB Implementation**: Amazon DynamoDB for serverless NoSQL database
 
 ### Storage
 
 The `Storage` class receives instances of both protocols and manages:
-- File storage (images) in S3
-- Database operations in MongoDB Atlas
+- File storage (images) - configurable via `FILE_STORAGE_TYPE` environment variable
+- Database operations - configurable via `DATABASE_TYPE` environment variable
+
+You can mix and match implementations (e.g., S3 for files + MongoDB for data, or ImgBB for files + DynamoDB for data).
 
 ### Services
 
@@ -268,7 +292,38 @@ ruff check app/
 
 - All endpoints require API Key authentication via the `X-API-Key` header
 - User passwords are hashed using bcrypt before storage
-- Images are stored in S3 and URLs are saved in MongoDB
+- Images are stored in S3 or ImgBB (configurable via `FILE_STORAGE_TYPE`) and URLs are saved in the database
 - The system automatically calculates average ratings and updates user points
 - User IDs must be provided explicitly in creation endpoints (author_id, user_id)
 - Email addresses are validated using Pydantic's email validator
+
+## File Storage Options
+
+### AWS S3 (Default)
+
+S3 is the default file storage option, suitable for production environments. It requires:
+- AWS account
+- S3 bucket created
+- IAM credentials with S3 permissions
+
+### ImgBB
+
+ImgBB is an alternative file storage option that is **extremely easy to use** for image hosting. It's ideal for:
+- Development and testing
+- Quick prototyping
+- Projects that don't require AWS infrastructure
+
+**Advantages of ImgBB:**
+- No AWS account needed
+- Simple API - just upload and get a URL
+- Free tier available
+- Automatic image optimization
+- CDN included
+
+**Getting an ImgBB API Key:**
+1. Visit https://api.imgbb.com/
+2. Sign up for a free account
+3. Get your API key from the dashboard
+4. Set `FILE_STORAGE_TYPE=imgbb` and `IMGBB_API_KEY=your-key` in your `.env` file
+
+**Note**: ImgBB does not support programmatic deletion via API. Images uploaded to ImgBB will remain until manually deleted through the web interface.
