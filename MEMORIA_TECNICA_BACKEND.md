@@ -671,10 +671,6 @@ As a **free solution**, ImgBB has a significant limitation: **it does not suppor
 - **ImgBB (Free)**: Free, easy setup | **Cannot delete images programmatically**
 - **AWS S3 (Paid)**: Full CRUD including deletion |  Requires AWS account and costs
 
-**Recommendation**: 
-- Use **ImgBB** for development, testing, and prototypes where image deletion is not critical
-- Use **AWS S3** for production environments where full CRUD operations (including deletion) are required, accepting the associated costs
-
 ### 5.4 Local Configuration
 
 1. **Clone or download the project**
