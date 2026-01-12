@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydantic
+email-validator
+pymongo
+boto3
+python-dotenv
+python-multipart
+passlib
+bcrypt
+python-jose
+dnspython
+pydantic-settings
+motor

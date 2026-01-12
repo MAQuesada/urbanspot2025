@@ -13,8 +13,10 @@
  */
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000',
-  // TODO: Set your API key here - must match the API_KEY in backend/.env
-  apiKey: ''
+  // 1. L'URL de ton backend déployé sur Vercel (plus de localhost !)
+  apiUrl: 'https://urbanspot2025.vercel.app',
+  
+  // 2. Ta clé API secrète (récupérée de ton fichier .env)
+  apiKey: 'some-secret-key-1203092ejrfmwps;dklnmc'
 };
 
